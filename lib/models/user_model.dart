@@ -1,42 +1,35 @@
 class UserModel {
   final String id;
-  final String formattedName;
-  final String givenName;
-  final String familyName;
-  final String userName;
-  final String department;
+  final String nome;
+  final String email;
+  final String setmanu; // Setor do mecânico
+  final String matricula; // Matrícula do mecânico
 
   UserModel({
     required this.id,
-    required this.formattedName,
-    required this.givenName,
-    required this.familyName,
-    required this.userName,
-    required this.department,
+    required this.nome,
+    required this.email,
+    this.setmanu = '',
+    this.matricula = '',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    final name = json['name'] as Map<String, dynamic>;
     return UserModel(
-      id: json['id'],
-      formattedName: name['formatted'],
-      givenName: name['givenName'],
-      familyName: name['familyName'],
-      userName: json['userName'],
-      department: json['department'],
+      id: json['id']?.toString() ?? '',
+      nome: json['nome']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      setmanu: json['setmanu']?.toString() ?? '',
+      matricula: json['matricula']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': {
-        'formatted': formattedName,
-        'givenName': givenName,
-        'familyName': familyName,
-      },
-      'userName': userName,
-      'department': department,
+      'nome': nome,
+      'email': email,
+      'setmanu': setmanu,
+      'matricula': matricula,
     };
   }
 } 

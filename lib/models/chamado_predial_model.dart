@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ChamadoModel {
+class ChamadoPredialModel {
   final String filial;
   final String status;
   final String num;
@@ -23,7 +23,7 @@ class ChamadoModel {
   final String observacao;
   final String observacaoMecanico;
 
-  ChamadoModel({
+  ChamadoPredialModel({
     required this.filial,
     required this.status,
     required this.num,
@@ -47,8 +47,8 @@ class ChamadoModel {
     required this.observacaoMecanico,
   });
 
-  factory ChamadoModel.fromJson(Map<String, dynamic> json) {
-    return ChamadoModel(
+  factory ChamadoPredialModel.fromJson(Map<String, dynamic> json) {
+    return ChamadoPredialModel(
       filial: json['filial']?.toString().trim() ?? '',
       status: json['status']?.toString().trim() ?? '',
       num: json['num']?.toString().trim() ?? '',

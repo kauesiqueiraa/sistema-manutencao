@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/mecanico_viewmodel.dart';
@@ -28,9 +29,9 @@ class _MecanicosViewState extends State<MecanicosView> {
         actions: [
           IconButton(
             onPressed: () {
-              context.read<AuthViewModel>().logout();
+              context.goNamed('home');
             },
-            icon: const Icon(Icons.logout), 
+            icon: const Icon(Icons.arrow_back_ios), 
           ),
         ],
       ),

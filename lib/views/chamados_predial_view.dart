@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/chamado_viewmodel.dart';
-import '../models/chamado_model.dart';
+import 'package:sistema_manutencao/models/user_model.dart';
+import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
+import '../viewmodels/chamado_predial_viewmodel.dart';
+import '../models/chamado_predial_model.dart';
 
 class ChamadosPredialView extends StatefulWidget {
   const ChamadosPredialView({super.key});
@@ -15,9 +17,11 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => context.read<ChamadoViewModel>().carregarChamados(),
-    );
+    Future.microtask(() {
+      final viewModel = context.read<ChamadoPredialViewModel>();
+      viewModel.carregarChamados();
+      viewModel.carregarMecanicos();
+    });
   }
 
   @override
@@ -38,7 +42,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
         children: [
           _buildStatusFilter(),
           Expanded(
-            child: Consumer<ChamadoViewModel>(
+            child: Consumer<ChamadoPredialViewModel>(
               builder: (context, viewModel, child) {
                 if (viewModel.isLoading) {
                   return const Center(child: CircularProgressIndicator());
@@ -63,7 +67,8 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                   itemCount: viewModel.chamadosFiltrados.length,
                   itemBuilder: (context, index) {
                     final chamado = viewModel.chamadosFiltrados[index];
-                    return _buildChamadoCard(chamado, viewModel);
+                    final user = context.read<AuthViewModel>().user;
+                    return _buildChamadoCard(chamado, viewModel, user);
                   },
                 );
               },
@@ -75,7 +80,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
   }
 
   Widget _buildStatusFilter() {
-    return Consumer<ChamadoViewModel>(
+    return Consumer<ChamadoPredialViewModel>(
       builder: (context, viewModel, child) {
         return Container(
           padding: const EdgeInsets.all(16),
@@ -103,7 +108,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
   Widget _buildFilterChip(
     String label,
     String value,
-    ChamadoViewModel viewModel,
+    ChamadoPredialViewModel viewModel,
   ) {
     final isSelected = viewModel.statusFiltro == value;
     return FilterChip(
@@ -115,7 +120,9 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
     );
   }
 
-  Widget _buildChamadoCard(ChamadoModel chamado, ChamadoViewModel viewModel) {
+  Widget _buildChamadoCard(ChamadoPredialModel chamado, ChamadoPredialViewModel viewModel, UserModel? user) {
+    final observacaoController = TextEditingController();
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ExpansionTile(
@@ -147,8 +154,38 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                 Text('Objetivo: ${chamado.objetivo}'),
                 const SizedBox(height: 8),
                 Text('Mecânico: ${chamado.mecanico}'),
-                if (chamado.mecanico2.isNotEmpty)
-                  Text('Mecânico 2: ${chamado.mecanico2}'),
+                const SizedBox(height: 8),
+                if (chamado.status == '3') ...[
+                  if (chamado.mecanico2.isEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Adicionar Mecânico',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                        ),
+                        items: viewModel.mecanicos.map((mecanico) {
+                          return DropdownMenuItem<String>(
+                            value: mecanico['matricula'],
+                            child: Text(mecanico['nome']!),
+                          );
+                        }).toList(),
+                        onChanged: (String? matricula) async {
+                          if (matricula != null) {
+                            await viewModel.atualizarStatus(
+                              numero: chamado.num,
+                              status: '3',
+                              mecanico2: matricula,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ] else ...[
+                    Text('Mecânico 2: ${chamado.mecanico2}'),
+                  ],
+                ],
                 const SizedBox(height: 8),
                 Text('Data Solicitação: ${chamado.dataSolicitacao}'),
                 Text('Hora Solicitação: ${chamado.horaSolicitacao}'),
@@ -164,8 +201,20 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                   const SizedBox(height: 8),
                   Text('Observação: ${chamado.observacaoMecanico}'),
                 ],
+                if (chamado.status == '3') ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: observacaoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Observação',
+                      border: OutlineInputBorder(),
+                      hintText: 'Digite a observação para finalizar o chamado',
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
                 const SizedBox(height: 16),
-                _buildActionButtons(chamado, viewModel),
+                _buildActionButtons(chamado, viewModel, observacaoController, user),
               ],
             ),
           ),
@@ -174,7 +223,14 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
     );
   }
 
-  Widget _buildActionButtons(ChamadoModel chamado, ChamadoViewModel viewModel) {
+  Widget _buildActionButtons(
+    ChamadoPredialModel chamado,
+    ChamadoPredialViewModel viewModel,
+    TextEditingController observacaoController,
+    UserModel? user,
+  ) {
+    final userMatricula = user?.matricula; // Matrícula do usuário logado
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -184,6 +240,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
               context,
               chamado,
               viewModel,
+              user,
               '3', // Em Atendimento
             ),
             child: const Text('Iniciar Atendimento'),
@@ -195,6 +252,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
               context,
               chamado,
               viewModel,
+              user,
               '2', // Pausado
             ),
             style: ElevatedButton.styleFrom(
@@ -203,18 +261,26 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
             child: const Text('Pausar'),
           ),
           const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: () => _showUpdateStatusDialog(
-              context,
-              chamado,
-              viewModel,
-              '4', // Finalizado
+          if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
+            ElevatedButton(
+              onPressed: () async {
+                if (observacaoController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Informe uma observação para finalizar o chamado')),
+                  );
+                  return;
+                }
+                await viewModel.atualizarStatus(
+                  numero: chamado.num,
+                  status: '4',
+                  observacaoMecanico: observacaoController.text,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('Finalizar'),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-            child: const Text('Finalizar'),
-          ),
         ],
         if (chamado.status == '2') // Pausado
           ElevatedButton(
@@ -222,6 +288,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
               context,
               chamado,
               viewModel,
+              user,
               '3', // Em Atendimento
             ),
             style: ElevatedButton.styleFrom(
@@ -250,8 +317,9 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
 
   Future<void> _showUpdateStatusDialog(
     BuildContext context,
-    ChamadoModel chamado,
-    ChamadoViewModel viewModel,
+    ChamadoPredialModel chamado,
+    ChamadoPredialViewModel viewModel,
+    UserModel? user,
     String novoStatus,
   ) async {
     final now = DateTime.now();
@@ -261,13 +329,14 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
     await viewModel.atualizarStatus(
       numero: chamado.num,
       status: novoStatus,
-      mecanico: chamado.mecanico,
+      mecanico: novoStatus == '3' ? user?.matricula : chamado.mecanico, // Usa a matrícula do usuário ao iniciar
       mecanico2: chamado.mecanico2,
-      dataInicio: novoStatus == '3' ? dataAtual : null,
+      dataInicio: chamado.dataInicio,
       horaInicio: novoStatus == '3' ? horaAtual : null,
       dataInicioPausa: novoStatus == '2' ? dataAtual : null,
       dataFim: novoStatus == '4' ? dataAtual : null,
       horaFim: novoStatus == '4' ? horaAtual : null,
     );
   }
+
 } 

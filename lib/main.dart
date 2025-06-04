@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sistema_manutencao/services/auth_service.dart';
 import 'package:sistema_manutencao/services/dio_service.dart';
 import 'package:sistema_manutencao/services/mecanico_service.dart';
-import 'package:sistema_manutencao/services/chamado_service.dart';
+import 'package:sistema_manutencao/services/chamado_predial_service.dart';
 import 'package:sistema_manutencao/services/chamado_industrial_service.dart';
 import 'package:sistema_manutencao/services/chamado_preventivo_service.dart';
+import 'package:sistema_manutencao/services/user_service.dart';
 import 'package:sistema_manutencao/viewmodels/mecanico_viewmodel.dart';
-import 'package:sistema_manutencao/viewmodels/chamado_viewmodel.dart';
+import 'package:sistema_manutencao/viewmodels/chamado_predial_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_industrial_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_preventivo_viewmodel.dart';
 import 'package:sistema_manutencao/views/mecanicos_view.dart';
@@ -22,9 +24,59 @@ import 'views/home_view.dart';
 import 'widgets/timeout_wrapper.dart';
 
 void main() async {
-  await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  await dotenv.load(fileName: ".env");
+
+  final dio = Dio();
+  dio.interceptors.add(LogInterceptor(
+    requestBody: true,
+    responseBody: true,
+  ));
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<Dio>(
+          create: (_) => dio,
+        ),
+        Provider<AuthService>(
+          create: (_) => AuthService(),
+        ),
+        Provider<UserService>(
+          create: (_) => UserService(),
+        ),
+        Provider<MecanicoService>(
+          create: (_) => MecanicoService(dio),
+        ),
+        Provider<ChamadoPredialService>(
+          create: (_) => ChamadoPredialService(dio),
+        ),
+        ChangeNotifierProxyProvider2<AuthService, UserService, AuthViewModel>(
+          create: (context) => AuthViewModel(
+            context.read<AuthService>(),
+            context.read<UserService>(),
+            context.read<MecanicoService>(),
+          ),
+          update: (context, authService, userService, previous) => AuthViewModel(
+            authService,
+            userService,
+            context.read<MecanicoService>(),
+          ),
+        ),
+        ChangeNotifierProxyProvider2<ChamadoPredialService, MecanicoService, ChamadoPredialViewModel>(
+          create: (context) => ChamadoPredialViewModel(
+            context.read<ChamadoPredialService>(),
+            context.read<MecanicoService>(),
+          ),
+          update: (context, service, mecanicoService, previous) => ChamadoPredialViewModel(
+            service,
+            mecanicoService,
+          ),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -38,7 +90,11 @@ class MyApp extends StatelessWidget {
           create: (_) => DioService.dio,
         ),
         ChangeNotifierProvider(
-          create: (_) => AuthViewModel(),
+          create: (context) => AuthViewModel(
+            AuthService(),
+            UserService(),
+            MecanicoService(context.read<Dio>()),
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => MecanicoViewModel(
@@ -46,8 +102,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) => ChamadoViewModel(
-            ChamadoService(context.read<Dio>()),
+          create: (context) => ChamadoPredialViewModel(
+            ChamadoPredialService(context.read<Dio>()),
+            MecanicoService(context.read<Dio>()),
+      
           ),
         ),
         ChangeNotifierProvider(

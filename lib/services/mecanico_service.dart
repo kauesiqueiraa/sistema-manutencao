@@ -27,4 +27,31 @@ class MecanicoService {
       throw Exception('Erro ao buscar mecânicos: $e');
     }
   }
+
+  Future<MecanicoModel?> findMecanicoByUserId(String userId) async {
+    try {
+      final response = await _dio.get(
+        '$_baseUrl/rest/WSMECANI/retmec',
+        queryParameters: {
+          'empfil': '0401',
+          'setor': 'I',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        
+        final List<dynamic> data = response.data;
+        
+        // Procura o mecânico que tem o mesmo ID do usuário
+        for (var mecanico in data) {
+          if (mecanico['iduser']?.toString() == userId) {
+            return MecanicoModel.fromJson(mecanico);
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Erro ao buscar mecânicos: $e');
+    }
+  }
 } 

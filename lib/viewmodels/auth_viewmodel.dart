@@ -4,48 +4,69 @@ import '../models/auth_model.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/user_service.dart';
+import '../services/mecanico_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthService _authService = AuthService();
-  final UserService _userService = UserService();
+  final AuthService _authService;
+  final UserService _userService;
+  final MecanicoService _mecanicoService;
   bool _isLoading = false;
-  String? _error;
+  String _error = '';
   AuthModel? _authModel;
-  UserModel? _userModel;
+  UserModel? _user;
   String? _username;
 
+  AuthViewModel(this._authService, this._userService, this._mecanicoService);
+
   bool get isLoading => _isLoading;
-  String? get error => _error;
+  String get error => _error;
   AuthModel? get authModel => _authModel;
-  UserModel? get userModel => _userModel;
+  UserModel? get user => _user;
   bool get isAuthenticated => _authModel != null;
 
-  Future<bool> login(String username, String password) async {
+  Future<void> login(String username, String password) async {
     try {
       _isLoading = true;
-      _error = null;
+      _error = '';
       _username = username;
       notifyListeners();
 
+      // 1. Autentica o usuário
       _authModel = await _authService.login(username, password);
       
-      // Buscar dados do usuário
-      _userModel = await _userService.getUserData(username, _authModel!.accessToken);
+      // 2. Busca os dados do usuário
+      final userData = await _userService.getUserData(username, _authModel!.accessToken);
       
-      // Salvar token no SharedPreferences
+      // 3. Verifica se o usuário é um mecânico
+      final mecanico = await _mecanicoService.findMecanicoByUserId(userData.id);
+      
+      if (mecanico != null) {
+        // Se for mecânico, atualiza o usuário com os dados do mecânico
+        _user = UserModel(
+          id: userData.id,
+          nome: userData.nome,
+          email: userData.email,
+          setmanu: mecanico.setmanu,
+          matricula: mecanico.matricula,
+        );
+      } else {
+        // Se não for mecânico, mantém os dados do usuário sem os campos de mecânico
+        _user = userData;
+      }
+
+      // Salva o token no SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', _authModel!.accessToken);
       await prefs.setString('refresh_token', _authModel!.refreshToken);
       await prefs.setString('username', username);
 
-      _isLoading = false;
       notifyListeners();
-      return true;
     } catch (e) {
-      _isLoading = false;
       _error = e.toString();
       notifyListeners();
-      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -55,7 +76,7 @@ class AuthViewModel extends ChangeNotifier {
     await prefs.remove('refresh_token');
     await prefs.remove('username');
     _authModel = null;
-    _userModel = null;
+    _user = null;
     _username = null;
     notifyListeners();
   }
@@ -77,17 +98,36 @@ class AuthViewModel extends ChangeNotifier {
       _username = username;
 
       try {
-        _userModel = await _userService.getUserData(username, accessToken);
+        // Busca os dados do usuário
+        final userData = await _userService.getUserData(username, accessToken);
+        
+        // Verifica se o usuário é um mecânico
+        final mecanico = await _mecanicoService.findMecanicoByUserId(userData.id);
+        
+        if (mecanico != null) {
+          // Se for mecânico, atualiza o usuário com os dados do mecânico
+          _user = UserModel(
+            id: userData.id,
+            nome: userData.nome,
+            email: userData.email,
+            setmanu: mecanico.setmanu,
+            matricula: mecanico.matricula,
+          );
+        } else {
+          // Se não for mecânico, mantém os dados do usuário sem os campos de mecânico
+          _user = userData;
+        }
+
+        notifyListeners();
+        return true;
       } catch (e) {
         // Se não conseguir buscar os dados do usuário, faz logout
         await logout();
         return false;
       }
-
-      notifyListeners();
-      return true;
     }
     return false;
   }
 } 
+
 
