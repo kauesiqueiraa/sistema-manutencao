@@ -90,3 +90,4 @@ class AuthViewModel extends ChangeNotifier {
     return false;
   }
 } 
+

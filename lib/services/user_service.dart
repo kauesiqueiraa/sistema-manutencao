@@ -4,12 +4,12 @@ import '../models/user_model.dart';
 
 class UserService {
   final Dio _dio = Dio();
-  final String _baseUrl = dotenv.env['API_URL'] ?? '';
+  final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
   Future<UserModel> getUserData(String username, String token) async {
     try {
       final response = await _dio.get(
-        'http://172.16.50.9:9103/rest/users',
+        '$_baseUrl/rest/users',
         queryParameters: {'userName': username},
         options: Options(
           headers: {
