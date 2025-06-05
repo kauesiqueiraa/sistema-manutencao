@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sistema_manutencao/models/user_model.dart';
+import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/chamado_industrial_viewmodel.dart';
 import '../models/chamado_industrial_model.dart';
 
@@ -16,8 +18,11 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   void initState() {
     super.initState();
     Future.microtask(
-      () => context.read<ChamadoIndustrialViewModel>().carregarChamados(),
-    );
+      () {
+        final viewModel = context.read<ChamadoIndustrialViewModel>();
+        viewModel.carregarChamados();
+        viewModel.carregarMecanicos();
+      });
   }
 
   @override
@@ -63,7 +68,8 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                   itemCount: viewModel.chamadosFiltrados.length,
                   itemBuilder: (context, index) {
                     final chamado = viewModel.chamadosFiltrados[index];
-                    return _buildChamadoCard(chamado, viewModel);
+                    final user = context.read<AuthViewModel>().user;
+                    return _buildChamadoCard(chamado, viewModel, user);
                   },
                 );
               },
@@ -171,7 +177,10 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   Widget _buildChamadoCard(
     ChamadoIndustrialModel chamado,
     ChamadoIndustrialViewModel viewModel,
+    UserModel? user,
   ) {
+    final observacaoController = TextEditingController();
+    
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ExpansionTile(
@@ -205,8 +214,37 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                 Text('Solicitante: ${chamado.solict}'),
                 if (chamado.mecanico.isNotEmpty)
                   Text('Mecânico: ${chamado.mecanico}'),
-                if (chamado.mecanico2.isNotEmpty)
-                  Text('Mecânico 2: ${chamado.mecanico2}'),
+                if (chamado.status == '3') ...[
+                  if (chamado.mecanico2.isEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Adicionar Mecânico',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                        ),
+                        items: viewModel.mecanicos.map((mecanico) {
+                          return DropdownMenuItem<String>(
+                            value: mecanico['matricula'],
+                            child: Text(mecanico['nome']!),
+                          );
+                        }).toList(),
+                        onChanged: (String? matricula) async {
+                          if (matricula != null) {
+                            await viewModel.atualizarStatus(
+                              numero: chamado.num,
+                              status: '3',
+                              mecanico2: matricula,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ] else ...[
+                    Text('Mecânico 2: ${chamado.mecanico2}'),
+                  ],
+                ],
                 const SizedBox(height: 8),
                 Text('Data Solicitação: ${chamado.dataSolicitacaoFormatada}'),
                 Text('Hora Solicitação: ${chamado.horaSolicitacao}'),
@@ -222,8 +260,20 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                   const SizedBox(height: 8),
                   Text('Observação: ${chamado.observacao}'),
                 ],
+                if (chamado.status == '3') ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: observacaoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Observação',
+                      border: OutlineInputBorder(),
+                      hintText: 'Digite a observação para finalizar o chamado',
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
                 const SizedBox(height: 16),
-                _buildActionButtons(chamado, viewModel),
+                _buildActionButtons(chamado, viewModel, observacaoController, user),
               ],
             ),
           ),
@@ -235,7 +285,11 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   Widget _buildActionButtons(
     ChamadoIndustrialModel chamado,
     ChamadoIndustrialViewModel viewModel,
+    TextEditingController observacaoController,
+    UserModel? user,
   ) {
+    final userMatricula = user?.matricula;
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -245,6 +299,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
               context,
               chamado,
               viewModel,
+              user,
               '3', // Em Atendimento
             ),
             child: const Text('Iniciar Atendimento'),
@@ -256,26 +311,35 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
               context,
               chamado,
               viewModel,
+              user,
               '2', // Pausado
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: Colors.pink,
             ),
             child: const Text('Pausar'),
           ),
           const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: () => _showUpdateStatusDialog(
-              context,
-              chamado,
-              viewModel,
-              '4', // Finalizado
+          if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
+            ElevatedButton(
+              onPressed: () async {
+                if (observacaoController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Informe uma observação para finalizar o chamado')),
+                  );
+                  return;
+                }
+                await viewModel.atualizarStatus(
+                  numero: chamado.num,
+                  status: '4',
+                  observacaoMecanico: observacaoController.text,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.yellow,
+              ),
+              child: const Text('Finalizar'),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-            child: const Text('Finalizar'),
-          ),
         ],
         if (chamado.status == '2') // Pausado
           ElevatedButton(
@@ -283,10 +347,11 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
               context,
               chamado,
               viewModel,
+              user,
               '3', // Em Atendimento
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: Colors.green,
             ),
             child: const Text('Retomar'),
           ),
@@ -297,9 +362,9 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   IconData _getStatusIcon(String status) {
     switch (status) {
       case '1':
-        return Icons.assignment;
+        return Icons.add_circle;
       case '2':
-        return Icons.pause;
+        return Icons.pause_circle;
       case '3':
         return Icons.build;
       case '4':
@@ -313,11 +378,21 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
     BuildContext context,
     ChamadoIndustrialModel chamado,
     ChamadoIndustrialViewModel viewModel,
+    UserModel? user,
     String novoStatus,
   ) async {
+      final now = DateTime.now();
+      final dataAtual = '${now.year}/${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}';
+      final horaAtual = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
     await viewModel.atualizarStatus(
       numero: chamado.num,
       status: novoStatus,
+      mecanico: novoStatus == '3' ? user?.matricula : chamado.mecanico,
+      mecanico2: chamado.mecanico2,
+      dataInicio: chamado.dataInicio,
+      horaInicio: novoStatus == '3' ? horaAtual : null,
+      dataFim: novoStatus == '4' ? dataAtual : null,
+      horaFim: novoStatus == '4' ? horaAtual : null,   
     );
   }
 } 

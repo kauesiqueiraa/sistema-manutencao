@@ -109,11 +109,11 @@ class ChamadoIndustrialModel {
   Color get statusColor {
     switch (status) {
       case '1':
-        return Colors.blue;
-      case '2':
-        return Colors.orange;
-      case '3':
         return Colors.green;
+      case '2':
+        return Colors.pink;
+      case '3':
+        return Colors.yellow;
       case '4':
         return Colors.grey;
       default:

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_predial_model.dart';
 
 class ChamadoPredialService {
@@ -10,15 +11,15 @@ class ChamadoPredialService {
 
   ChamadoPredialService(this._dio);
 
-  String _getDataAtual() {
-    final now = DateTime.now();
-    return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-  }
+  // String _getDataAtual() {
+  //   final now = DateTime.now();
+  //   return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+  // }
 
-  String _getHoraAtual() {
-    final now = DateTime.now();
-    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-  }
+  // String _getHoraAtual() {
+  //   final now = DateTime.now();
+  //   return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+  // }
 
   Future<List<ChamadoPredialModel>> getChamados() async {
     try {
@@ -70,22 +71,22 @@ class ChamadoPredialService {
             data.addAll({
               'mecani': mecanico ?? '',
               'mecan2': mecanico2 ?? '',
-              'dtini': _getDataAtual(),
-              'hrini': _getHoraAtual(),
+              'dtini': getDataAtual(),
+              'hrini': getHoraAtual(),
             });
           } else {
             // Retomar Atendimento
             data.addAll({
-              'dtfpsa': _getDataAtual(),
-              'hrfpsa': _getHoraAtual(),
+              'dtfpsa': getDataAtual(),
+              'hrfpsa': getHoraAtual(),
             });
           }
           break;
 
         case '2': // Pausar
           data.addAll({
-            'dtipsa': _getDataAtual(),
-            'hripsa': _getHoraAtual(),
+            'dtipsa': getDataAtual(),
+            'hripsa': getHoraAtual(),
             'obsmec': observacaoMecanico ?? '',
           });
           break;
@@ -95,8 +96,8 @@ class ChamadoPredialService {
             throw Exception('É necessário informar uma observação ao finalizar o chamado');
           }
           data.addAll({
-            'dtfim': _getDataAtual(),
-            'hrfim': _getHoraAtual(),
+            'dtfim': getDataAtual(),
+            'hrfim': getHoraAtual(),
             'obsmec': observacaoMecanico,
           });
           break;

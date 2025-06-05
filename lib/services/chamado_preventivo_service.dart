@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/chamado_preventivo_model.dart';
 
 class ChamadoPreventivoService {
   final Dio _dio;
-  final String _baseUrl;
+  final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
-  ChamadoPreventivoService(this._dio) : _baseUrl = const String.fromEnvironment('BASE_TESTE_URL');
+  ChamadoPreventivoService(this._dio);
 
   Future<List<ChamadoPreventivoModel>> getChamados({
     String? status,

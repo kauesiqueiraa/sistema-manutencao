@@ -111,6 +111,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => ChamadoIndustrialViewModel(
             ChamadoIndustrialService(context.read<Dio>()),
+            MecanicoService(context.read<Dio>()),
           ),
         ),
         ChangeNotifierProvider(

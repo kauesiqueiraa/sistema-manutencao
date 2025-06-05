@@ -71,43 +71,31 @@ class HomeView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            const Icon(Icons.assignment),
-            const SizedBox(width: 8),
-            const Text('Chamados Predial'),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              onPressed: () => context.go('/chamados-predial'),
-            ),
-          ],
+        _buildSubSection(
+          context,
+          title: 'Chamados Predial',
+          icon: Icons.assignment,
+          onTap: () {
+            context.go('/chamados-predial');
+          },
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.engineering),
-            const SizedBox(width: 8),
-            const Text('Chamados Industrial'),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              onPressed: () => context.go('/chamados-industrial'),
-            ),
-          ],
+        _buildSubSection(
+          context,
+          title: 'Chamados Industrial',
+          icon: Icons.engineering,
+          onTap: () {
+            context.go('/chamados-industrial');
+          },
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.build),
-            const SizedBox(width: 8),
-            const Text('Chamados Preventivos'),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              onPressed: () => context.go('/chamados-preventivo'),
-            ),
-          ],
+        _buildSubSection(
+          context,
+          title: 'Chamados Preventivos',
+          icon: Icons.build,
+          onTap: () {
+            context.go('/chamados-preventivo');
+          },
         ),
       ],
     );
@@ -119,7 +107,7 @@ class HomeView extends StatelessWidget {
         _buildSubSection(
           context,
           title: 'Mecânicos',
-          icon: Icons.engineering,
+          icon: Icons.group,
           onTap: () {
             context.go('/mecanicos');
           },
