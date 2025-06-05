@@ -19,7 +19,7 @@ class ChamadoIndustrialService {
       final queryParams = {
         'empfil': '0401',
         if (status != null) 'status': status,
-        if (dataInicio != null) 'periodo': '$dataInicio-$dataFim',
+        if (dataInicio != null) 'periodo': '$dataInicio$dataFim',
       };
 
       final response = await _dio.get(

@@ -366,7 +366,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
       case '2':
         return Icons.pause_circle;
       case '3':
-        return Icons.build;
+        return Icons.play_arrow;
       case '4':
         return Icons.check_circle;
       default:

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/mecanico_viewmodel.dart';
 import '../models/mecanico_model.dart';
 

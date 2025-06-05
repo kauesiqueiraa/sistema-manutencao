@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_preventivo_model.dart';
 
 class ChamadoPreventivoService {
@@ -46,27 +47,66 @@ class ChamadoPreventivoService {
   Future<void> atualizarStatus({
     required String numero,
     required String status,
-    required String mecanico,
+    String? mecanico,
     String? dataInicio,
     String? horaInicio,
+    String? dataFim,
+    String? horaFim,
     String? observacaoMecanico,
   }) async {
-    final data = {
-      'numero': numero,
-      'status': status,
-      'mecanico': mecanico,
-      if (dataInicio != null) 'dataInicio': dataInicio,
-      if (horaInicio != null) 'horaInicio': horaInicio,
-      if (observacaoMecanico != null) 'observacaoMecanico': observacaoMecanico,
-    };
+    try {
+      Map<String, dynamic> data = {'num': numero, 'status': status};
 
-    final response = await _dio.put(
-      '$_baseUrl/rest/zws_zmd',
-      data: data,
-    );
+      switch (status) {
+         case '3': // Iniciar ou Retomar Atendimento
+          if (dataInicio == '') {
+            // Iniciar Atendimento
+            data.addAll({
+              'mecan': mecanico ?? '',
+              'dtini': getDataAtual(),
+              'hrini': getHoraAtual(),
+            });
+          } else {
+            // Retomar Atendimento
+            data.addAll({
+              'dtfim': "",
+            });
+          }
+          break;
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao atualizar status: ${response.statusCode}');
+        case '2': // Pausar
+          data.addAll({
+            'obsmec': observacaoMecanico ?? '',
+          });
+          break;
+
+        case '4': // Finalizar
+          if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
+            throw Exception('É necessário informar uma observação ao finalizar o chamado');
+          }
+          data.addAll({
+            'dtfim': getDataAtual(),
+            'hrfim': getHoraAtual(),
+            'obsmec': observacaoMecanico,
+          });
+          break;
+      }
+      final response = await _dio.put(
+        '$_baseUrl/rest/zws_zmd/update',
+        // options: Options(
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        //   responseType: ResponseType.plain,
+        // ),
+        data: data,
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao atualizar status: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao atualizar status do chamado: $e');
     }
   }
 } 

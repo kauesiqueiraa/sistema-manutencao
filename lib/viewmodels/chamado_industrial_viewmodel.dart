@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:sistema_manutencao/services/mecanico_service.dart';
 import '../models/chamado_industrial_model.dart';
 import '../services/chamado_industrial_service.dart';
-import '../viewmodels/auth_viewmodel.dart';
-import 'package:provider/provider.dart';
+// import '../viewmodels/auth_viewmodel.dart';
+// import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../models/mecanico_model.dart';
 

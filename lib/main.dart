@@ -116,7 +116,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoPreventivoViewModel(
-            ChamadoPreventivoService(Dio()),
+            ChamadoPreventivoService(Dio())
           ),
         ),
       ],
