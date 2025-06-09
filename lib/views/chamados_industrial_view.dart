@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sistema_manutencao/models/user_model.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
+import 'package:sistema_manutencao/widgets/error_page.dart';
 import '../viewmodels/chamado_industrial_viewmodel.dart';
 import '../models/chamado_industrial_model.dart';
 
@@ -50,11 +51,12 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                 }
 
                 if (viewModel.error.isNotEmpty) {
-                  return Center(
-                    child: Text(
-                      'Erro: ${viewModel.error}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
+                  return ErrorPage(
+                    message: viewModel.error,
+                    onRetry: () {
+                      viewModel.carregarChamados();
+                      viewModel.carregarMecanicos();
+                    },
                   );
                 }
 

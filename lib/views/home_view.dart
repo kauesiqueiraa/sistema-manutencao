@@ -20,6 +20,7 @@ class HomeView extends StatelessWidget {
             icon: const Icon(Icons.logout),
           ),
         ],
+        backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

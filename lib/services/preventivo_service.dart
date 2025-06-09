@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:sistema_manutencao/utils/time_date.dart';
 import '../exceptions/api_exception.dart';
-import '../models/chamado_industrial_model.dart';
+import '../models/preventivo_model.dart';
 
-class ChamadoIndustrialService {
+class PreventivoService {
   final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
-  ChamadoIndustrialService(this._dio);
+  PreventivoService(this._dio);
 
-  Future<List<ChamadoIndustrialModel>> getChamados({
+  Future<List<PreventivoModel>> getPreventivos({
     String? status,
     String? dataInicio,
     String? dataFim,
@@ -35,11 +34,11 @@ class ChamadoIndustrialService {
       if (response.statusCode == 200) {
         final String responseData = response.data.toString();
         final List<dynamic> jsonList = jsonDecode(responseData);
-        return jsonList.map((json) => ChamadoIndustrialModel.fromJson(json)).toList();
+        return jsonList.map((json) => PreventivoModel.fromJson(json)).toList();
       }
 
       throw ApiException(
-        message: 'Erro ao buscar chamados',
+        message: 'Erro ao buscar preventivos',
         statusCode: response.statusCode,
         data: response.data,
       );
@@ -92,7 +91,9 @@ class ChamadoIndustrialService {
 
         case '4': // Finalizar
           if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
-            throw Exception('É necessário informar uma observação ao finalizar o chamado');
+            throw ApiException(
+              message: 'É necessário informar uma observação ao finalizar o preventivo',
+            );
           }
           data.addAll({
             'dtfim': getDataAtual(),
@@ -109,12 +110,26 @@ class ChamadoIndustrialService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Falha ao atualizar status do chamado');
+        throw ApiException(
+          message: 'Erro ao atualizar status do preventivo',
+          statusCode: response.statusCode,
+          data: response.data,
+        );
       }
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     } catch (e) {
       throw ApiException.fromError(e);
     }
+  }
+
+  String getDataAtual() {
+    final now = DateTime.now();
+    return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+  }
+
+  String getHoraAtual() {
+    final now = DateTime.now();
+    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
   }
 } 
