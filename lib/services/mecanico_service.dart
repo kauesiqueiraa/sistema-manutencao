@@ -54,4 +54,51 @@ class MecanicoService {
       throw Exception('Erro ao buscar mecânicos: $e');
     }
   }
+
+  Future<bool> findStatusMecanicoByMat(String mat) async {
+    try {
+      final response = await _dio.get(
+        '$_baseUrl/rest/WSMECANI/retmec',
+        queryParameters: {
+          'empfil': '0401',
+          'matricula': mat,
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        for (var mecanico in data) {
+          if (mecanico['status'] == 'D=Disponivel') {
+            return true;
+          }
+        }
+        //se não encontrar o mecanico, retorna null
+        return false;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('Erro ao buscar mecânicos: $e');
+    }
+  }
+
+  Future<void> updateMecanicoStatus(String mat, String status) async {
+    try {
+      final Response<dynamic> response = await _dio.put(
+        '$_baseUrl/rest/WSMECANI/',
+        options: Options(
+          headers: {'Content-Type': 'application/json', },
+          responseType: ResponseType.plain, 
+        ),
+        data:{
+          'matricula': mat,
+          'status': status,
+        },
+      );
+
+      if (response.statusCode != 200) {
+      throw Exception('Erro ao atualizar: statusCode ${response.statusCode}');
+    }
+    } catch (e){
+      throw Exception ('Erro ao atualizar status do Mecanico'); 
+    }
+  }
 } 

@@ -139,7 +139,6 @@ class ChamadoIndustrialViewModel extends ChangeNotifier {
         dataFim: dataFim,
         horaFim: horaFim,
         observacaoMecanico: observacaoMecanico,
-        pausa: pausa,
       );
 
       // Atualiza a lista de chamados
@@ -157,85 +156,7 @@ class ChamadoIndustrialViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> iniciarAtendimento(String numeroChamado, String matricula) async {
-    try {
-      _isLoading = true;
-      _error = '';
-      notifyListeners();
-
-      if (matricula.isEmpty) {
-        throw Exception('Usuário não é um mecânico');
-      }
-
-      await _service.atualizarStatus(
-        numero: numeroChamado,
-        status: '3',
-        mecanico: matricula,
-        dataInicio: '00/00/00',
-      );
-
-      // Atualiza a lista de chamados
-      await carregarChamados();
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> pausarAtendimento(String numeroChamado, String observacao) async {
-    try {
-      _isLoading = true;
-      _error = '';
-      notifyListeners();
-
-      await _service.atualizarStatus(
-        numero: numeroChamado,
-        status: '2',
-        observacaoMecanico: observacao,
-      );
-
-      // Atualiza a lista de chamados
-      await carregarChamados();
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  
-
-  Future<void> finalizarAtendimento(String numeroChamado, String matricula, String observacao) async {
-    try {
-      _isLoading = true;
-      _error = '';
-      notifyListeners();
-
-      await _service.atualizarStatus(
-        numero: numeroChamado,
-        status: '4',
-        mecanico2: matricula,
-        observacaoMecanico: observacao,
-      );
-
-      // Atualiza a lista de chamados
-      await carregarChamados();
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
+ 
 
   // Future<void> adicionarSegundoMecanico(String numeroChamado, String matricula, String segundoMecanico) async {
   //   try {
@@ -278,5 +199,26 @@ class ChamadoIndustrialViewModel extends ChangeNotifier {
       _error = 'Ocorreu um erro inesperado ao adicionar o mecânico.';
       notifyListeners();
     }
+  }
+
+  Future<bool> mecanicoDiponivel(String matricula) async {
+    try {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+
+      final disponivel = await _mecanicoService.findStatusMecanicoByMat(matricula);
+      // se retornar true, o mecanico está disponível
+      // se retornar false, o mecanico está indisponível e deve ser mostrado um Dialog na tela
+      return disponivel;
+
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+    return false;
   }
 } 

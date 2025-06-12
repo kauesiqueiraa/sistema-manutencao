@@ -20,15 +20,15 @@ class AppRouter {
           GoRoute(
             path: '/home',
             name: 'home',
-            builder: (context, state) => TimeoutWrapper(
-              child: const HomeView(),
+            builder: (context, state) => const TimeoutWrapper(
+              child: HomeView(),
             ),
           ),
           GoRoute(
             path: '/mecanicos',
             name: 'mecanicos',
-            builder: (context, state) => TimeoutWrapper(
-              child: const MecanicosView(),
+            builder: (context, state) => const TimeoutWrapper(
+              child: MecanicosView(),
             ),
           ),
         ],

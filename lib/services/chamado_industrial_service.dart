@@ -4,12 +4,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../exceptions/api_exception.dart';
 import '../models/chamado_industrial_model.dart';
+import '../services/mecanico_service.dart';
 
 class ChamadoIndustrialService {
   final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
+  final MecanicoService _mecanicoService;
 
-  ChamadoIndustrialService(this._dio);
+  ChamadoIndustrialService(this._dio, this._mecanicoService);
 
   Future<List<ChamadoIndustrialModel>> getChamados({
     String? status,
@@ -60,13 +62,19 @@ class ChamadoIndustrialService {
     String? dataFim,
     String? horaFim,
     String? observacaoMecanico,
-    String? pausa,
   }) async {
     try {
       Map<String, dynamic> data = {'num': numero, 'status': status};
 
       switch (status) {
         case '3': // Iniciar ou Retomar Atendimento
+          // Verifica se o mecânico está disponível
+          // final mecanicoDisponivel = await _mecanicoService.findStatusMecanicoByMat(mecanico!);
+          // if (!mecanicoDisponivel) {
+          //   throw Exception('Você já está atendendo outro chamado. Finalize ou pause o atendimento atual antes de iniciar um novo.');
+          // }
+          // await _mecanicoService.updateMecanicoStatus(mecanico, 'A');
+          
           if (dataInicio == '') {
             // Iniciar Atendimento
             data.addAll({
@@ -77,28 +85,30 @@ class ChamadoIndustrialService {
           } else {
             // Retomar Atendimento
             data.addAll({
-              'pausa': 'N',
-              'dtfim': "",
+              'mecan': mecanico ?? '',
             });
           }
           break;
 
         case '2': // Pausar
+          // await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
-            'pausa': 'S',
             'obsmec': observacaoMecanico ?? '',
           });
           break;
 
         case '4': // Finalizar
+          if(mecanico2 != null && mecanico2.isNotEmpty) {
+            await addSecondMecanic(numero, mecanico2);
+          }
           if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
             throw Exception('É necessário informar uma observação ao finalizar o chamado');
           }
+          // await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'dtfim': getDataAtual(),
             'hrfim': getHoraAtual(),
             'obsmec': observacaoMecanico,
-            'pausa': 'N'
           });
           break;
       }
@@ -110,6 +120,26 @@ class ChamadoIndustrialService {
 
       if (response.statusCode != 200) {
         throw Exception('Falha ao atualizar status do chamado');
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    } catch (e) {
+      throw ApiException.fromError(e);
+    }
+  }
+
+  Future<void> addSecondMecanic(String num, String mecanico2) async {
+    try { 
+      final response = await _dio.put(
+        '$_baseUrl/rest/zws_zmc/mecanico',
+        data: {
+          'num': num,
+          'mecan2': mecanico2,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Falha ao adicionar o segundo mecânico');
       }
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

@@ -14,7 +14,6 @@ class AuthViewModel extends ChangeNotifier {
   String _error = '';
   AuthModel? _authModel;
   UserModel? _user;
-  String? _username;
 
   AuthViewModel(this._authService, this._userService, this._mecanicoService);
 
@@ -28,7 +27,6 @@ class AuthViewModel extends ChangeNotifier {
     try {
       _isLoading = true;
       _error = '';
-      _username = username;
       notifyListeners();
 
       // 1. Autentica o usuário
@@ -77,7 +75,6 @@ class AuthViewModel extends ChangeNotifier {
     await prefs.remove('username');
     _authModel = null;
     _user = null;
-    _username = null;
     notifyListeners();
   }
 
@@ -95,7 +92,6 @@ class AuthViewModel extends ChangeNotifier {
         tokenType: 'Bearer',
         expiresIn: 30,
       );
-      _username = username;
 
       try {
         // Busca os dados do usuário

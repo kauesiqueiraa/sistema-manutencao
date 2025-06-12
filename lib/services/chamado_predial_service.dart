@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/exceptions/api_exception.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_predial_model.dart';
 
@@ -92,6 +93,9 @@ class ChamadoPredialService {
           break;
 
         case '4': // Finalizar
+          if(mecanico2 != null && mecanico2.isNotEmpty) {
+            await addSecondMecanic(numero, mecanico2);
+          }
           if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
             throw Exception('É necessário informar uma observação ao finalizar o chamado');
           }
@@ -113,6 +117,26 @@ class ChamadoPredialService {
       }
     } catch (e) {
       throw Exception('Erro ao atualizar status do chamado: $e');
+    }
+  }
+
+  Future<void> addSecondMecanic(String num, String mecanico2) async {
+    try { 
+      final response = await _dio.put(
+        '$_baseUrl/rest/zws_zmp/mecanico',
+        data: {
+          'num': num,
+          'mecan2': mecanico2,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Falha ao adicionar o segundo mecânico');
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    } catch (e) {
+      throw ApiException.fromError(e);
     }
   }
 }

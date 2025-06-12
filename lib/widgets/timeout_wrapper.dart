@@ -20,8 +20,8 @@ class TimeoutWrapper extends StatefulWidget {
 class _TimeoutWrapperState extends State<TimeoutWrapper> {
   Timer? _inactivityTimer;
   Timer? _warningTimer;
-  final Duration _timeoutDuration = const Duration(minutes: 5);
-  final Duration _warningDuration = const Duration(minutes: 4);
+  final Duration _timeoutDuration = const Duration(minutes: 2);
+  final Duration _warningDuration = const Duration(minutes: 1);
   bool _isWarningShown = false;
 
   @override
@@ -75,10 +75,16 @@ class _TimeoutWrapperState extends State<TimeoutWrapper> {
   }
 
   void _handleTimeout() {
-    if (mounted) {
-      context.read<AuthViewModel>().logout();
-      context.goNamed('login');
-    }
+    // if (mounted) {
+    //   context.read<AuthViewModel>().logout();
+    //   context.goNamed('login');
+    // }
+    final authViewModel = context.read<AuthViewModel>();
+    authViewModel.logout().then((_) {
+      if (mounted) {
+        context.goNamed('login');
+      }
+    });
   }
 
   void _trackUserActivity() {

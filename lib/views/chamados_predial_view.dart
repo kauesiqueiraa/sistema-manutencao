@@ -14,6 +14,8 @@ class ChamadosPredialView extends StatefulWidget {
 }
 
 class _ChamadosPredialViewState extends State<ChamadosPredialView> {
+  final Map<String, String> _mecanic2Selected = {};
+
   @override
   void initState() {
     super.initState();
@@ -160,6 +162,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: DropdownButtonFormField<String>(
+                        value: _mecanic2Selected[chamado.mecanico2],
                         decoration: const InputDecoration(
                           labelText: 'Adicionar Mecânico',
                           border: OutlineInputBorder(),
@@ -171,14 +174,10 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                             child: Text(mecanico['nome']!),
                           );
                         }).toList(),
-                        onChanged: (String? matricula) async {
-                          if (matricula != null) {
-                            await viewModel.atualizarStatus(
-                              numero: chamado.num,
-                              status: '3',
-                              mecanico2: matricula,
-                            );
-                          }
+                        onChanged: (String? matricula) {
+                          setState(() {
+                            _mecanic2Selected[chamado.mecanico2] = matricula ?? '';
+                          });
                         },
                       ),
                     ),
@@ -261,7 +260,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
             child: const Text('Pausar'),
           ),
           const SizedBox(width: 8),
-          if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
+          // if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
             ElevatedButton(
               onPressed: () async {
                 if (observacaoController.text.isEmpty) {
@@ -274,6 +273,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                   numero: chamado.num,
                   status: '4',
                   observacaoMecanico: observacaoController.text,
+                  mecanico2: _mecanic2Selected[chamado.mecanico2],
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -329,7 +329,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
     await viewModel.atualizarStatus(
       numero: chamado.num,
       status: novoStatus,
-      mecanico: novoStatus == '3' ? user?.matricula : chamado.mecanico, // Usa a matrícula do usuário ao iniciar
+      mecanico: novoStatus == '3' ? user?.matricula : chamado.mecanico,
       mecanico2: chamado.mecanico2,
       dataInicio: chamado.dataInicio,
       horaInicio: novoStatus == '3' ? horaAtual : null,

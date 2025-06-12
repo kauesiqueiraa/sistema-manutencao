@@ -6,7 +6,7 @@ class ChamadoPreventivoViewModel extends ChangeNotifier {
   final ChamadoPreventivoService _service;
   List<ChamadoPreventivoModel> _chamados = [];
   List<ChamadoPreventivoModel> _chamadosFiltrados = [];
-  List<Map<String, String>> _mecanicos = [];
+  final List<Map<String, String>> _mecanicos = [];
   bool _isLoading = false;
   String _error = '';
   String _statusFiltro = '123'; // Padrão: mostrar todos exceto finalizados

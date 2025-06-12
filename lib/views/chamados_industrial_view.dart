@@ -15,6 +15,7 @@ class ChamadosIndustrialView extends StatefulWidget {
 }
 
 class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
+  final Map<String, String> _mecanic2Selected = {};
   @override
   void initState() {
     super.initState();
@@ -50,13 +51,19 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
+                // if (viewModel.error.isNotEmpty) {
+                //   return ErrorPage(
+                //     message: viewModel.error,
+                //     onRetry: () {
+                //       viewModel.carregarChamados();
+                //       viewModel.carregarMecanicos();
+                //     },
+                //   );
+                // }
+
                 if (viewModel.error.isNotEmpty) {
-                  return ErrorPage(
-                    message: viewModel.error,
-                    onRetry: () {
-                      viewModel.carregarChamados();
-                      viewModel.carregarMecanicos();
-                    },
+                 return const Center(
+                    child: Text('Nenhum chamado encontrado'),
                   );
                 }
 
@@ -91,7 +98,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
             children: [
               _buildStatusFilter(viewModel),
               const SizedBox(height: 16),
-              _buildPeriodoFilter(viewModel),
+              // _buildPeriodoFilter(viewModel),
             ],
           ),
         );
@@ -221,6 +228,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: DropdownButtonFormField<String>(
+                        value: _mecanic2Selected[chamado.mecanico2],
                         decoration: const InputDecoration(
                           labelText: 'Adicionar Mecânico',
                           border: OutlineInputBorder(),
@@ -232,14 +240,10 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                             child: Text(mecanico['nome']!),
                           );
                         }).toList(),
-                        onChanged: (String? matricula) async {
-                          if (matricula != null) {
-                            await viewModel.atualizarStatus(
-                              numero: chamado.num,
-                              status: '3',
-                              mecanico2: matricula,
-                            );
-                          }
+                        onChanged: (String? matricula) {
+                          setState(() {
+                            _mecanic2Selected[chamado.mecanico2] = matricula ?? '';
+                          });
                         },
                       ),
                     ),
@@ -290,7 +294,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
     TextEditingController observacaoController,
     UserModel? user,
   ) {
-    final userMatricula = user?.matricula;
+    // final userMatricula = user?.matricula;
     
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -322,7 +326,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
             child: const Text('Pausar'),
           ),
           const SizedBox(width: 8),
-          if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
+          // if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
             ElevatedButton(
               onPressed: () async {
                 if (observacaoController.text.isEmpty) {
@@ -335,6 +339,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                   numero: chamado.num,
                   status: '4',
                   observacaoMecanico: observacaoController.text,
+                  mecanico2: _mecanic2Selected[chamado.mecanico2],
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -397,4 +402,24 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
       horaFim: novoStatus == '4' ? horaAtual : null,   
     );
   }
+
+  // Future<void> statusMecanico() async {
+  //   final mecanicoDisponivel = await viewModel.mecanicoDiponivel(userMatricula!);
+
+  //   if (!mecanicoDisponivel) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text('Mecânico ocupado'),
+  //         content: const Text('Você já está atendendo outro chamado. Finalize-o antes de iniciar outro.'),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: const Text('OK'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
+  // }
 } 

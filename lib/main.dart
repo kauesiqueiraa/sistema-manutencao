@@ -110,7 +110,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoIndustrialViewModel(
-            ChamadoIndustrialService(context.read<Dio>()),
+            ChamadoIndustrialService(context.read<Dio>(), context.read<MecanicoService>()),
             MecanicoService(context.read<Dio>()),
           ),
         ),
@@ -128,6 +128,7 @@ class MyApp extends StatelessWidget {
         ),
         routerConfig: GoRouter(
           initialLocation: '/login',
+          refreshListenable: context.read<AuthViewModel>(),
           routes: [
             GoRoute(
               path: '/login',
@@ -169,7 +170,8 @@ class MyApp extends StatelessWidget {
             ),
           ],
           redirect: (context, state) {
-            final isAuthenticated = context.read<AuthViewModel>().isAuthenticated;
+            final authViewModel = context.read<AuthViewModel>();
+            final isAuthenticated = authViewModel.isAuthenticated;
             final isLoginRoute = state.matchedLocation == '/login';
 
             if (!isAuthenticated && !isLoginRoute) {

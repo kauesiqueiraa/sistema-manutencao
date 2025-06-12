@@ -273,7 +273,7 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
     ChamadoPreventivoViewModel viewModel,
     UserModel? user,
   ) {
-    final userMatricula = user?.matricula;
+    // final userMatricula = user?.matricula;
 
     switch (chamado.status) {
       case '1': // Aberto

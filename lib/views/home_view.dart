@@ -40,7 +40,20 @@ class HomeView extends StatelessWidget {
             _buildChamadosSection(context),
             const SizedBox(height: 32),
             // Seção de Acesso Rápido
-            _buildSectionHeader('Acesso Rápido'),
+            Row(
+              children: [
+                _buildSectionHeader('Acesso Rápido'),
+                const SizedBox(width: 3),
+                Text(
+                  'Em breve essa seção estará disponível.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey,
+                  ),
+                ),
+                ],
+            ),
             const SizedBox(height: 16),
             _buildAcessoRapidoSection(context),
           ],
@@ -105,23 +118,34 @@ class HomeView extends StatelessWidget {
   Widget _buildAcessoRapidoSection(BuildContext context) {
     return Column(
       children: [
-        _buildSubSection(
-          context,
-          title: 'Mecânicos',
-          icon: Icons.group,
-          onTap: () {
-            context.go('/mecanicos');
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildSubSection(
-          context,
-          title: 'Inventário de Máquinas',
-          icon: Icons.inventory_2,
-          onTap: () {
-            // TODO: Implementar navegação para tela de inventário
-          },
-        ),
+       _buildDisabledSubSection(
+        context,
+        title: 'Mecânicos',
+        icon: Icons.group,
+      ),
+      const SizedBox(height: 12),
+      _buildDisabledSubSection(
+        context,
+        title: 'Inventário de Máquinas',
+        icon: Icons.inventory_2,
+      ),
+        // _buildSubSection(
+        //   context,
+        //   title: 'Mecânicos',
+        //   icon: Icons.group,
+        //   onTap: () {
+        //     context.go('/mecanicos');
+        //   },
+        // ),
+        // const SizedBox(height: 12),
+        // _buildSubSection(
+        //   context,
+        //   title: 'Inventário de Máquinas',
+        //   icon: Icons.inventory_2,
+        //   onTap: () {
+        //     // TODO: Implementar navegação para tela de inventário
+        //   },
+        // ),
       ],
     );
   }
@@ -132,31 +156,101 @@ class HomeView extends StatelessWidget {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Theme.of(context).primaryColor),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      splashColor: Theme.of(context).primaryColor.withOpacity(0.1),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.blue.shade50,
+              Colors.blue.shade100,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            onPressed: onTap,
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: Icon(icon, color: Theme.of(context).primaryColor),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _buildDisabledSubSection(
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      IgnorePointer(
+        child: Opacity(
+          opacity: 0.5,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Theme.of(context).primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                const Icon(Icons.lock_outline),
+              ],
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 4),
+      const Text(
+        'Em breve',
+        style: TextStyle(
+          fontSize: 12,
+          fontStyle: FontStyle.italic,
+          color: Colors.grey,
+        ),
+      ),
+      const SizedBox(height: 12),
+    ],
+  );
+}
 } 
