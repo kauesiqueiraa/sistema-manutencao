@@ -27,17 +27,18 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chamados Preventivos'),
+        title: const Text('Chamados Preventivos', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Inter'),),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white,),
           onPressed: () => context.goNamed('home'),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.filter_list, color: Colors.white,),
             onPressed: () => _showFiltrosDialog(context),
           ),
         ],
+        backgroundColor: Colors.lightGreen,
       ),
       body: Consumer<ChamadoPreventivoViewModel>(
         builder: (context, viewModel, child) {
@@ -285,7 +286,10 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
             user,
              '3'
             ),
-          child: const Text('Iniciar Atendimento'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+          child: const Text('Iniciar Atendimento', style: TextStyle(color: Colors.white),),
         );
       case '2': // Pausado
         return ElevatedButton(
@@ -296,7 +300,10 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
             user, 
             '3'
           ),
-          child: const Text('Retomar Atendimento'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+          ),
+          child: const Text('Retomar Atendimento', style: TextStyle(color: Colors.white),),
         );
       case '3': // Em Atendimento
         return Row(
@@ -310,7 +317,10 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
                 user,
                 '2'
               ),
-              child: const Text('Pausar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('Pausar', style: TextStyle(color: Colors.white),),
             ),
             ElevatedButton(
               onPressed: () => _showUpdateStatusDialog(
@@ -320,7 +330,10 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
                 user,
                 '4'
               ),
-              child: const Text('Finalizar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('Finalizar', style: TextStyle(color: Colors.white),),
             ),
           ],
         );

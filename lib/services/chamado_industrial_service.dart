@@ -4,14 +4,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../exceptions/api_exception.dart';
 import '../models/chamado_industrial_model.dart';
-import '../services/mecanico_service.dart';
+// import '../services/mecanico_service.dart';
 
 class ChamadoIndustrialService {
   final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
-  final MecanicoService _mecanicoService;
+  // final MecanicoService _mecanicoService;
 
-  ChamadoIndustrialService(this._dio, this._mecanicoService);
+  ChamadoIndustrialService(this._dio);
+  // ChamadoIndustrialService(this._dio, this._mecanicoService);
 
   Future<List<ChamadoIndustrialModel>> getChamados({
     String? status,

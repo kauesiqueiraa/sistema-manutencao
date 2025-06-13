@@ -10,17 +10,17 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sistema de Manutenção'),
+        title: const Text('Sistema de Manutenção', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontFamily: 'Inter'),),
         actions: [
           IconButton(
             onPressed: () {
               context.read<AuthViewModel>().logout();
               context.goNamed('login');
             },
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white,),
           ),
         ],
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromRGBO(33, 58, 98, 1),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -44,7 +44,7 @@ class HomeView extends StatelessWidget {
               children: [
                 _buildSectionHeader('Acesso Rápido'),
                 const SizedBox(width: 3),
-                Text(
+                const Text(
                   'Em breve essa seção estará disponível.',
                   style: TextStyle(
                     fontSize: 12,
@@ -159,23 +159,24 @@ class HomeView extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      splashColor: Theme.of(context).primaryColor.withOpacity(0.1),
+      splashColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.blue.shade50,
-              Colors.blue.shade100,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          // gradient: LinearGradient(
+          //   colors: [
+          //     Colors.blue.shade50,
+          //     Colors.blue.shade100,
+          //   ],
+          //   begin: Alignment.topLeft,
+          //   end: Alignment.bottomRight,
+          // ),
+          color: Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -184,7 +185,7 @@ class HomeView extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               child: Icon(icon, color: Theme.of(context).primaryColor),
             ),
             const SizedBox(width: 16),

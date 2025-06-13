@@ -20,8 +20,8 @@ class TimeoutWrapper extends StatefulWidget {
 class _TimeoutWrapperState extends State<TimeoutWrapper> {
   Timer? _inactivityTimer;
   Timer? _warningTimer;
-  final Duration _timeoutDuration = const Duration(minutes: 2);
-  final Duration _warningDuration = const Duration(minutes: 1);
+  final Duration _timeoutDuration = const Duration(minutes: 5);
+  final Duration _warningDuration = const Duration(minutes: 4);
   bool _isWarningShown = false;
 
   @override

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sistema_manutencao/models/user_model.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
-import 'package:sistema_manutencao/widgets/error_page.dart';
+// import 'package:sistema_manutencao/widgets/error_page.dart';
 import '../viewmodels/chamado_industrial_viewmodel.dart';
 import '../models/chamado_industrial_model.dart';
 
@@ -31,15 +31,20 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chamados Industrial'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.goNamed('home');
-            },
-            icon: const Icon(Icons.arrow_back_ios),
-          ),
-        ],
+        title: const Text('Chamados Industrial', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Inter'),),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white,),
+          onPressed: () => context.goNamed('home'),
+        ),
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       context.goNamed('home');
+        //     },
+        //     icon: const Icon(Icons.arrow_back_ios, color: Colors.white,),
+        //   ),
+        // ],
+        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Column(
         children: [
@@ -138,50 +143,53 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
         viewModel.alterarFiltroStatus(selected ? value : '123');
         viewModel.carregarChamados();
       },
+      backgroundColor: Colors.white,
+      selectedColor: Colors.deepPurpleAccent,
+      checkmarkColor: Colors.white,
     );
   }
 
-  Widget _buildPeriodoFilter(ChamadoIndustrialViewModel viewModel) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextButton.icon(
-            onPressed: () async {
-              final data = await showDateRangePicker(
-                context: context,
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
-                initialDateRange: viewModel.dataInicio != null && viewModel.dataFim != null
-                    ? DateTimeRange(
-                        start: viewModel.dataInicio!,
-                        end: viewModel.dataFim!,
-                      )
-                    : null,
-              );
-              if (data != null) {
-                viewModel.alterarPeriodo(data.start, data.end);
-                viewModel.carregarChamados();
-              }
-            },
-            icon: const Icon(Icons.calendar_today),
-            label: Text(
-              viewModel.dataInicio != null && viewModel.dataFim != null
-                  ? '${viewModel.dataInicio!.day}/${viewModel.dataInicio!.month}/${viewModel.dataInicio!.year} - ${viewModel.dataFim!.day}/${viewModel.dataFim!.month}/${viewModel.dataFim!.year}'
-                  : 'Selecionar Período',
-            ),
-          ),
-        ),
-        if (viewModel.dataInicio != null && viewModel.dataFim != null)
-          IconButton(
-            onPressed: () {
-              viewModel.alterarPeriodo(null, null);
-              viewModel.carregarChamados();
-            },
-            icon: const Icon(Icons.clear),
-          ),
-      ],
-    );
-  }
+  // Widget _buildPeriodoFilter(ChamadoIndustrialViewModel viewModel) {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         child: TextButton.icon(
+  //           onPressed: () async {
+  //             final data = await showDateRangePicker(
+  //               context: context,
+  //               firstDate: DateTime(2020),
+  //               lastDate: DateTime.now(),
+  //               initialDateRange: viewModel.dataInicio != null && viewModel.dataFim != null
+  //                   ? DateTimeRange(
+  //                       start: viewModel.dataInicio!,
+  //                       end: viewModel.dataFim!,
+  //                     )
+  //                   : null,
+  //             );
+  //             if (data != null) {
+  //               viewModel.alterarPeriodo(data.start, data.end);
+  //               viewModel.carregarChamados();
+  //             }
+  //           },
+  //           icon: const Icon(Icons.calendar_today),
+  //           label: Text(
+  //             viewModel.dataInicio != null && viewModel.dataFim != null
+  //                 ? '${viewModel.dataInicio!.day}/${viewModel.dataInicio!.month}/${viewModel.dataInicio!.year} - ${viewModel.dataFim!.day}/${viewModel.dataFim!.month}/${viewModel.dataFim!.year}'
+  //                 : 'Selecionar Período',
+  //           ),
+  //         ),
+  //       ),
+  //       if (viewModel.dataInicio != null && viewModel.dataFim != null)
+  //         IconButton(
+  //           onPressed: () {
+  //             viewModel.alterarPeriodo(null, null);
+  //             viewModel.carregarChamados();
+  //           },
+  //           icon: const Icon(Icons.clear),
+  //         ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildChamadoCard(
     ChamadoIndustrialModel chamado,
@@ -223,29 +231,27 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                 Text('Solicitante: ${chamado.solict}'),
                 if (chamado.mecanico.isNotEmpty)
                   Text('Mecânico: ${chamado.mecanico}'),
+                const SizedBox(height: 8),
                 if (chamado.status == '3') ...[
                   if (chamado.mecanico2.isEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: DropdownButtonFormField<String>(
-                        value: _mecanic2Selected[chamado.mecanico2],
-                        decoration: const InputDecoration(
-                          labelText: 'Adicionar Mecânico',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                        ),
-                        items: viewModel.mecanicos.map((mecanico) {
-                          return DropdownMenuItem<String>(
-                            value: mecanico['matricula'],
-                            child: Text(mecanico['nome']!),
-                          );
-                        }).toList(),
-                        onChanged: (String? matricula) {
-                          setState(() {
-                            _mecanic2Selected[chamado.mecanico2] = matricula ?? '';
-                          });
-                        },
+                    DropdownButtonFormField<String>(
+                      value: _mecanic2Selected[chamado.mecanico2],
+                      decoration: const InputDecoration(
+                        labelText: 'Adicionar Segundo Mecânico',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                       ),
+                      items: viewModel.mecanicos.map((mecanico) {
+                        return DropdownMenuItem<String>(
+                          value: mecanico['matricula'],
+                          child: Text(mecanico['nome']!),
+                        );
+                      }).toList(),
+                      onChanged: (String? matricula) {
+                        setState(() {
+                          _mecanic2Selected[chamado.mecanico2] = matricula ?? '';
+                        });
+                      },
                     ),
                   ] else ...[
                     Text('Mecânico 2: ${chamado.mecanico2}'),
@@ -308,7 +314,10 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
               user,
               '3', // Em Atendimento
             ),
-            child: const Text('Iniciar Atendimento'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+            child: const Text('Iniciar Atendimento', style: TextStyle(color: Colors.white),),
           ),
         if (chamado.status == '3') ...[
           // Em Atendimento
@@ -321,9 +330,9 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
               '2', // Pausado
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.pink,
+              backgroundColor: Colors.red,
             ),
-            child: const Text('Pausar'),
+            child: const Text('Pausar', style: TextStyle(color: Colors.white),),
           ),
           const SizedBox(width: 8),
           // if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
@@ -343,9 +352,9 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.yellow,
+                backgroundColor: Colors.green,
               ),
-              child: const Text('Finalizar'),
+              child: const Text('Finalizar', style: TextStyle(color: Colors.white),),
             ),
         ],
         if (chamado.status == '2') // Pausado
@@ -358,9 +367,9 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
               '3', // Em Atendimento
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.blue,
             ),
-            child: const Text('Retomar'),
+            child: const Text('Retomar', style: TextStyle(color: Colors.white),),
           ),
       ],
     );

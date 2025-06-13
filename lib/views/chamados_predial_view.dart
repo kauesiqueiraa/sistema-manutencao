@@ -30,15 +30,20 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chamados Predial'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.goNamed('home');
-            },
-            icon: const Icon(Icons.arrow_back_ios),
-          ),
-        ],
+        title: const Text('Chamados Predial', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'Inter'),),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white,),
+          onPressed: () => context.goNamed('home'),
+        ),
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       context.goNamed('home');
+        //     },
+        //     icon: const Icon(Icons.arrow_back_ios, color: Colors.white,),
+        //   ),
+        // ],
+        backgroundColor: Colors.blue,
       ),
       body: Column(
         children: [
@@ -119,6 +124,9 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
       onSelected: (selected) {
         viewModel.alterarFiltroStatus(selected ? value : '');
       },
+      backgroundColor: Colors.white,
+      selectedColor: Colors.blue,
+      checkmarkColor: Colors.white,
     );
   }
 
@@ -228,7 +236,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
     TextEditingController observacaoController,
     UserModel? user,
   ) {
-    final userMatricula = user?.matricula; // Matrícula do usuário logado
+    // final userMatricula = user?.matricula;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -242,7 +250,10 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
               user,
               '3', // Em Atendimento
             ),
-            child: const Text('Iniciar Atendimento'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+            child: const Text('Iniciar Atendimento', style: TextStyle(color: Colors.white),),
           ),
         if (chamado.status == '3') ...[
           // Em Atendimento
@@ -255,9 +266,9 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
               '2', // Pausado
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: Colors.red,
             ),
-            child: const Text('Pausar'),
+            child: const Text('Pausar', style: TextStyle(color: Colors.white),),
           ),
           const SizedBox(width: 8),
           // if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
@@ -279,7 +290,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
               ),
-              child: const Text('Finalizar'),
+              child: const Text('Finalizar', style: TextStyle(color: Colors.white),),
             ),
         ],
         if (chamado.status == '2') // Pausado
@@ -294,7 +305,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
             ),
-            child: const Text('Retomar'),
+            child: const Text('Retomar', style: TextStyle(color: Colors.white),),
           ),
       ],
     );
