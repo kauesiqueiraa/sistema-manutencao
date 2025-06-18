@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sistema_manutencao/models/produto_selecionado_model.dart';
 
 class ChamadoPreventivoModel {
   final String filial;
@@ -19,6 +20,7 @@ class ChamadoPreventivoModel {
   final String setor;
   final String mecanico;
   final String status;
+  late List<ProdutoSelecionadoModel> produtos;
 
   ChamadoPreventivoModel({
     required this.filial,
@@ -39,6 +41,7 @@ class ChamadoPreventivoModel {
     required this.setor,
     required this.mecanico,
     required this.status,
+    this.produtos = const [],
   });
 
   factory ChamadoPreventivoModel.fromJson(Map<String, dynamic> json) {

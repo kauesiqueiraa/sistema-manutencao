@@ -29,17 +29,11 @@ class AuthViewModel extends ChangeNotifier {
       _error = '';
       notifyListeners();
 
-      // 1. Autentica o usuário
       _authModel = await _authService.login(username, password);
-      
-      // 2. Busca os dados do usuário
       final userData = await _userService.getUserData(username, _authModel!.accessToken);
-      
-      // 3. Verifica se o usuário é um mecânico
       final mecanico = await _mecanicoService.findMecanicoByUserId(userData.id);
       
       if (mecanico != null) {
-        // Se for mecânico, atualiza o usuário com os dados do mecânico
         _user = UserModel(
           id: userData.id,
           nome: userData.nome,
@@ -48,11 +42,9 @@ class AuthViewModel extends ChangeNotifier {
           matricula: mecanico.matricula,
         );
       } else {
-        // Se não for mecânico, mantém os dados do usuário sem os campos de mecânico
         _user = userData;
       }
 
-      // Salva o token no SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', _authModel!.accessToken);
       await prefs.setString('refresh_token', _authModel!.refreshToken);
@@ -94,14 +86,10 @@ class AuthViewModel extends ChangeNotifier {
       );
 
       try {
-        // Busca os dados do usuário
         final userData = await _userService.getUserData(username, accessToken);
-        
-        // Verifica se o usuário é um mecânico
         final mecanico = await _mecanicoService.findMecanicoByUserId(userData.id);
         
         if (mecanico != null) {
-          // Se for mecânico, atualiza o usuário com os dados do mecânico
           _user = UserModel(
             id: userData.id,
             nome: userData.nome,
@@ -110,14 +98,12 @@ class AuthViewModel extends ChangeNotifier {
             matricula: mecanico.matricula,
           );
         } else {
-          // Se não for mecânico, mantém os dados do usuário sem os campos de mecânico
           _user = userData;
         }
 
         notifyListeners();
         return true;
       } catch (e) {
-        // Se não conseguir buscar os dados do usuário, faz logout
         await logout();
         return false;
       }

@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:sistema_manutencao/services/mecanico_service.dart';
 import '../models/chamado_industrial_model.dart';
 import '../services/chamado_industrial_service.dart';
-// import '../viewmodels/auth_viewmodel.dart';
-// import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../models/mecanico_model.dart';
 import '../exceptions/api_exception.dart';
@@ -155,35 +153,6 @@ class ChamadoIndustrialViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
- 
-
-  // Future<void> adicionarSegundoMecanico(String numeroChamado, String matricula, String segundoMecanico) async {
-  //   try {
-  //     _isLoading = true;
-  //     _error = '';
-  //     notifyListeners();
-
-  //     if (matricula.isEmpty) {
-  //       throw Exception('Usuário não é um mecânico');
-  //     }
-
-  //     await _service.adicionarSegundoMecanico(
-  //       numero: numeroChamado,
-  //       mecanico2: segundoMecanico,
-  //     );
-
-  //     // Atualiza a lista de chamados
-  //     await carregarChamados();
-  //     notifyListeners();
-  //   } catch (e) {
-  //     _error = e.toString();
-  //     notifyListeners();
-  //   } finally {
-  //     _isLoading = false;
-  //     notifyListeners();
-  //   }
-  // }
 
   Future<void> carregarMecanicos() async {
     try {

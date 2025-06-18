@@ -8,6 +8,7 @@ class ChamadoIndustrialModel {
   final String maq;
   final String solict;
   final String mecanico;
+  final String nomeMecanico;
   final String mecanico2;
   final String dataSolicitacao;
   final String horaSolicitacao;
@@ -37,6 +38,7 @@ class ChamadoIndustrialModel {
     required this.maq,
     required this.solict,
     required this.mecanico,
+    required this.nomeMecanico,
     required this.mecanico2,
     required this.dataSolicitacao,
     required this.horaSolicitacao,
@@ -68,6 +70,7 @@ class ChamadoIndustrialModel {
       maq: json['maq']?.toString().trim() ?? '',
       solict: json['solict']?.toString().trim() ?? '',
       mecanico: json['mecan']?.toString().trim() ?? '',
+      nomeMecanico: json['nomemecan']?.toString().trim() ?? '',
       mecanico2: json['mecan2']?.toString().trim() ?? '',
       dataSolicitacao: json['dtsoli']?.toString().trim() ?? '',
       horaSolicitacao: json['hrsoli']?.toString().trim() ?? '',

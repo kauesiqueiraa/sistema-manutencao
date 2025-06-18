@@ -27,7 +27,7 @@ class ChamadoIndustrialService {
       };
 
       final response = await _dio.get(
-        '$_baseUrl/rest/zws_zmc/get_all',
+        '$_baseUrl/rest/zws_zmc_new/get_all',
         queryParameters: queryParams,
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -115,7 +115,7 @@ class ChamadoIndustrialService {
       }
 
       final response = await _dio.put(
-        '$_baseUrl/rest/zws_zmc/update',
+        '$_baseUrl/rest/zws_zmc_new/update',
         data: data,
       );
 
@@ -132,7 +132,7 @@ class ChamadoIndustrialService {
   Future<void> addSecondMecanic(String num, String mecanico2) async {
     try { 
       final response = await _dio.put(
-        '$_baseUrl/rest/zws_zmc/mecanico',
+        '$_baseUrl/rest/zws_zmc_new/mecanico',
         data: {
           'num': num,
           'mecan2': mecanico2,

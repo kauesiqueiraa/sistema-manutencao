@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/mecanico_model.dart';
 
 class MecanicoService {
   final Dio _dio;
-  final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
+  // final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
+  final String _baseUrl = "http://172.16.50.12:9002";
 
   MecanicoService(this._dio);
 

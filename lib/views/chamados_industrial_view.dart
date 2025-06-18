@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sistema_manutencao/models/user_model.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
 // import 'package:sistema_manutencao/widgets/error_page.dart';
@@ -16,6 +17,8 @@ class ChamadosIndustrialView extends StatefulWidget {
 
 class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   final Map<String, String> _mecanic2Selected = {};
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+
   @override
   void initState() {
     super.initState();
@@ -78,13 +81,21 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                   );
                 }
 
-                return ListView.builder(
-                  itemCount: viewModel.chamadosFiltrados.length,
-                  itemBuilder: (context, index) {
-                    final chamado = viewModel.chamadosFiltrados[index];
-                    final user = context.read<AuthViewModel>().user;
-                    return _buildChamadoCard(chamado, viewModel, user);
+                return SmartRefresher(
+                  controller: _refreshController,
+                  enablePullDown: true,
+                  onRefresh: () async {
+                    await viewModel.carregarChamados();
+                    _refreshController.refreshCompleted();
                   },
+                  child: ListView.builder(
+                    itemCount: viewModel.chamadosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final chamado = viewModel.chamadosFiltrados[index];
+                      final user = context.read<AuthViewModel>().user;
+                      return _buildChamadoCard(chamado, viewModel, user);
+                    },
+                  ),
                 );
               },
             ),
@@ -431,4 +442,10 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
   //     );
   //   }
   // }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
 } 

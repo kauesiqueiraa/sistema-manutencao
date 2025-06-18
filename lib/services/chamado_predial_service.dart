@@ -12,16 +12,6 @@ class ChamadoPredialService {
 
   ChamadoPredialService(this._dio);
 
-  // String _getDataAtual() {
-  //   final now = DateTime.now();
-  //   return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-  // }
-
-  // String _getHoraAtual() {
-  //   final now = DateTime.now();
-  //   return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-  // }
-
   Future<List<ChamadoPredialModel>> getChamados() async {
     try {
       final response = await _dio.get(

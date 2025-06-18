@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sistema_manutencao/models/user_model.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
 import '../viewmodels/chamado_predial_viewmodel.dart';
@@ -15,6 +16,7 @@ class ChamadosPredialView extends StatefulWidget {
 
 class _ChamadosPredialViewState extends State<ChamadosPredialView> {
   final Map<String, String> _mecanic2Selected = {};
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   void initState() {
@@ -70,13 +72,21 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                   );
                 }
 
-                return ListView.builder(
-                  itemCount: viewModel.chamadosFiltrados.length,
-                  itemBuilder: (context, index) {
-                    final chamado = viewModel.chamadosFiltrados[index];
-                    final user = context.read<AuthViewModel>().user;
-                    return _buildChamadoCard(chamado, viewModel, user);
+                return SmartRefresher(
+                  controller: _refreshController,
+                  enablePullDown: true,
+                  onRefresh: () async {
+                    await viewModel.carregarChamados();
+                    _refreshController.refreshCompleted();
                   },
+                  child: ListView.builder(
+                    itemCount: viewModel.chamadosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final chamado = viewModel.chamadosFiltrados[index];
+                      final user = context.read<AuthViewModel>().user;
+                      return _buildChamadoCard(chamado, viewModel, user);
+                    },
+                  ),
                 );
               },
             ),
@@ -167,27 +177,24 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                 const SizedBox(height: 8),
                 if (chamado.status == '3') ...[
                   if (chamado.mecanico2.isEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: DropdownButtonFormField<String>(
-                        value: _mecanic2Selected[chamado.mecanico2],
-                        decoration: const InputDecoration(
-                          labelText: 'Adicionar Mecânico',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                        ),
-                        items: viewModel.mecanicos.map((mecanico) {
-                          return DropdownMenuItem<String>(
-                            value: mecanico['matricula'],
-                            child: Text(mecanico['nome']!),
-                          );
-                        }).toList(),
-                        onChanged: (String? matricula) {
-                          setState(() {
-                            _mecanic2Selected[chamado.mecanico2] = matricula ?? '';
-                          });
-                        },
+                    DropdownButtonFormField<String>(
+                      value: _mecanic2Selected[chamado.mecanico2],
+                      decoration: const InputDecoration(
+                        labelText: 'Adicionar Segundo Mecânico',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                       ),
+                      items: viewModel.mecanicos.map((mecanico) {
+                        return DropdownMenuItem<String>(
+                          value: mecanico['matricula'],
+                          child: Text(mecanico['nome']!),
+                        );
+                      }).toList(),
+                      onChanged: (String? matricula) {
+                        setState(() {
+                          _mecanic2Selected[chamado.mecanico2] = matricula ?? '';
+                        });
+                      },
                     ),
                   ] else ...[
                     Text('Mecânico 2: ${chamado.mecanico2}'),
@@ -195,6 +202,7 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                 ],
                 const SizedBox(height: 8),
                 Text('Data Solicitação: ${chamado.dataSolicitacao}'),
+                const SizedBox(height: 8),
                 Text('Hora Solicitação: ${chamado.horaSolicitacao}'),
                 if (chamado.dataInicio.isNotEmpty) ...[
                   const SizedBox(height: 8),

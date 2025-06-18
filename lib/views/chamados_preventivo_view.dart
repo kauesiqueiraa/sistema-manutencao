@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sistema_manutencao/models/user_model.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
+import 'package:sistema_manutencao/views/selecao_produtos_view.dart';
 import '../viewmodels/chamado_preventivo_viewmodel.dart';
 import '../models/chamado_preventivo_model.dart';
 
@@ -14,6 +16,8 @@ class ChamadosPreventivoView extends StatefulWidget {
 }
 
 class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  
   @override
   void initState() {
     super.initState();
@@ -67,15 +71,22 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
 
           return Column(
             children: [
-              // _buildFiltros(context, viewModel),
               Expanded(
-                child: ListView.builder(
-                  itemCount: viewModel.chamadosFiltrados.length,
-                  itemBuilder: (context, index) {
-                    final chamado = viewModel.chamadosFiltrados[index];
-                    final user = context.read<AuthViewModel>().user;
-                    return _buildChamadoCard(chamado, viewModel, user);
+                child: SmartRefresher(
+                  controller: _refreshController,
+                  enablePullDown: true,
+                  onRefresh: () async {
+                    await viewModel.carregarChamados();
+                    _refreshController.refreshCompleted();
                   },
+                  child: ListView.builder(
+                    itemCount: viewModel.chamadosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final chamado = viewModel.chamadosFiltrados[index];
+                      final user = context.read<AuthViewModel>().user;
+                      return _buildChamadoCard(chamado, viewModel, user);
+                    },
+                  ),
                 ),
               ),
             ],
@@ -84,137 +95,6 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
       ),
     );
   }
-
-  // Widget _buildFiltros(BuildContext context, ChamadoPreventivoViewModel viewModel) {
-  //   return Container(
-  //     padding: const EdgeInsets.all(16),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         _buildStatusFilter(context, viewModel),
-  //         const SizedBox(height: 16),
-  //         _buildPeriodoFilter(context, viewModel),
-  //         const SizedBox(height: 16),
-  //         _buildChapaLinhaFilter(context, viewModel),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildStatusFilter(BuildContext context, ChamadoPreventivoViewModel viewModel) {
-  //   return Wrap(
-  //     spacing: 8,
-  //     children: [
-  //       FilterChip(
-  //         label: const Text('Todos'),
-  //         selected: viewModel.statusFiltro.isEmpty,
-  //         onSelected: (selected) {
-  //           viewModel.alterarFiltroStatus(selected ? '' : '123');
-  //         },
-  //       ),
-  //       FilterChip(
-  //         label: const Text('Abertos'),
-  //         selected: viewModel.statusFiltro == '1',
-  //         onSelected: (selected) {
-  //           viewModel.alterarFiltroStatus(selected ? '1' : '123');
-  //         },
-  //       ),
-  //       FilterChip(
-  //         label: const Text('Pausados'),
-  //         selected: viewModel.statusFiltro == '2',
-  //         onSelected: (selected) {
-  //           viewModel.alterarFiltroStatus(selected ? '2' : '123');
-  //         },
-  //       ),
-  //       FilterChip(
-  //         label: const Text('Em Atendimento'),
-  //         selected: viewModel.statusFiltro == '3',
-  //         onSelected: (selected) {
-  //           viewModel.alterarFiltroStatus(selected ? '3' : '123');
-  //         },
-  //       ),
-  //       FilterChip(
-  //         label: const Text('Finalizados'),
-  //         selected: viewModel.statusFiltro == '4',
-  //         onSelected: (selected) {
-  //           viewModel.alterarFiltroStatus(selected ? '4' : '123');
-  //         },
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  // Widget _buildPeriodoFilter(BuildContext context, ChamadoPreventivoViewModel viewModel) {
-  //   return Row(
-  //     children: [
-  //       Expanded(
-  //         child: TextButton.icon(
-  //           icon: const Icon(Icons.calendar_today),
-  //           label: Text(viewModel.dataInicio != null
-  //               ? '${viewModel.dataInicio!.day}/${viewModel.dataInicio!.month}/${viewModel.dataInicio!.year}'
-  //               : 'Data Inicial'),
-  //           onPressed: () async {
-  //             final data = await showDatePicker(
-  //               context: context,
-  //               initialDate: viewModel.dataInicio ?? DateTime.now(),
-  //               firstDate: DateTime(2020),
-  //               lastDate: DateTime(2025),
-  //             );
-  //             if (data != null) {
-  //               viewModel.alterarPeriodo(data, viewModel.dataFim);
-  //             }
-  //           },
-  //         ),
-  //       ),
-  //       const SizedBox(width: 16),
-  //       Expanded(
-  //         child: TextButton.icon(
-  //           icon: const Icon(Icons.calendar_today),
-  //           label: Text(viewModel.dataFim != null
-  //               ? '${viewModel.dataFim!.day}/${viewModel.dataFim!.month}/${viewModel.dataFim!.year}'
-  //               : 'Data Final'),
-  //           onPressed: () async {
-  //             final data = await showDatePicker(
-  //               context: context,
-  //               initialDate: viewModel.dataFim ?? DateTime.now(),
-  //               firstDate: DateTime(2020),
-  //               lastDate: DateTime(2025),
-  //             );
-  //             if (data != null) {
-  //               viewModel.alterarPeriodo(viewModel.dataInicio, data);
-  //             }
-  //           },
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  // Widget _buildChapaLinhaFilter(BuildContext context, ChamadoPreventivoViewModel viewModel) {
-  //   return Row(
-  //     children: [
-  //       Expanded(
-  //         child: TextField(
-  //           decoration: const InputDecoration(
-  //             labelText: 'Chapa',
-  //             border: OutlineInputBorder(),
-  //           ),
-  //           onChanged: (value) => viewModel.alterarFiltroChapa(value),
-  //         ),
-  //       ),
-  //       const SizedBox(width: 16),
-  //       Expanded(
-  //         child: TextField(
-  //           decoration: const InputDecoration(
-  //             labelText: 'Linha',
-  //             border: OutlineInputBorder(),
-  //           ),
-  //           onChanged: (value) => viewModel.alterarFiltroLinha(value),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildChamadoCard(
     ChamadoPreventivoModel chamado, 
@@ -260,7 +140,44 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
                 if (chamado.observacao.isNotEmpty)
                   Text('Observação: ${chamado.observacao}'),
                 const SizedBox(height: 16),
+                if (chamado.status == '3') ...[
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SelecaoProdutosView(
+                            onProdutosSelecionados: (produtosSelecionados) {
+                              chamado.produtos = produtosSelecionados;
+                              // viewModel.adicionarProdutos(chamado.numero, produtosSelecionados);
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Produtos'),
+                  ),
+                ],
+                const SizedBox(height: 16),
                 _buildActionButtons(chamado, viewModel, user),
+                const SizedBox(height: 16),
+                // só que tem que mostrar os produtos do chamado referente ao qual ele foi setado
+                if (chamado.produtos.isNotEmpty) 
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Produtos utilizados:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      ...chamado.produtos.map(
+                        (produto) => Text(
+                        '${produto.descricao} \nQtd: ${produto.quantidade} \nObservação: ${produto.observacao}\n',
+                      )),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -274,8 +191,6 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
     ChamadoPreventivoViewModel viewModel,
     UserModel? user,
   ) {
-    // final userMatricula = user?.matricula;
-
     switch (chamado.status) {
       case '1': // Aberto
         return ElevatedButton(
@@ -323,13 +238,16 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
               child: const Text('Pausar', style: TextStyle(color: Colors.white),),
             ),
             ElevatedButton(
-              onPressed: () => _showUpdateStatusDialog(
-                context, 
-                chamado, 
-                viewModel, 
-                user,
-                '4'
-              ),
+              onPressed: () => {
+                viewModel.finalizarChamado(chamado.num, chamado.produtos, chamado.chapa),
+                _showUpdateStatusDialog(
+                  context, 
+                  chamado, 
+                  viewModel, 
+                  user,
+                  '4'
+                ),
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
               ),
@@ -377,70 +295,6 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
       horaFim: novoStatus == '4' ? horaAtual : null,   
     );
   }
-
-  // Future<void> _showUpdateStatusDialog(
-  //   BuildContext context,
-  //   ChamadoPreventivoModel chamado,
-  //   ChamadoPreventivoViewModel viewModel,
-  //   UserModel? user,
-  //   String novoStatus,
-  // ) async {
-  //   final mecanicoController = TextEditingController();
-  //   final observacaoController = TextEditingController();
-
-  //   return showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: Text(novoStatus == '3' ? 'Iniciar Atendimento' : 'Atualizar Status'),
-  //       content: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           TextField(
-  //             controller: mecanicoController,
-  //             decoration: const InputDecoration(
-  //               labelText: 'Mecânico',
-  //               border: OutlineInputBorder(),
-  //             ),
-  //           ),
-  //           const SizedBox(height: 16),
-  //           TextField(
-  //             controller: observacaoController,
-  //             decoration: const InputDecoration(
-  //               labelText: 'Observação',
-  //               border: OutlineInputBorder(),
-  //             ),
-  //             maxLines: 3,
-  //           ),
-  //         ],
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text('Cancelar'),
-  //         ),
-  //         ElevatedButton(
-  //           onPressed: () async {
-  //             if (mecanicoController.text.isEmpty) {
-  //               ScaffoldMessenger.of(context).showSnackBar(
-  //                 const SnackBar(content: Text('Informe o mecânico')),
-  //               );
-  //               return;
-  //             }
-
-  //             await viewModel.atualizarStatus(
-  //               numero: chamado.num,
-  //               status: novoStatus,
-  //               mecanico: mecanicoController.text,
-  //               observacaoMecanico: observacaoController.text.isNotEmpty ? observacaoController.text : null,
-  //             );
-  //             if (mounted) Navigator.pop(context);
-  //           },
-  //           child: const Text('Confirmar'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Future<void> _showFiltrosDialog(BuildContext context) async {
     final viewModel = context.read<ChamadoPreventivoViewModel>();

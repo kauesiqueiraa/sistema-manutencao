@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_preventivo_model.dart';
+import '../exceptions/api_exception.dart';
 
 class ChamadoPreventivoService {
   final Dio _dio;
@@ -107,6 +108,31 @@ class ChamadoPreventivoService {
       }
     } catch (e) {
       throw Exception('Erro ao atualizar status do chamado: $e');
+    }
+  }
+
+  Future<void> automatedCalendar(Map<String, dynamic> automatedCalendar) async {
+    try {
+      final jsonData = jsonEncode(automatedCalendar);
+
+      final response = await _dio.post(
+        '$_baseUrl/rest/wsreppre',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          responseType: ResponseType.plain,
+        ),
+        data: jsonData,
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Falha ao gerar nova preventiva. Código: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException.fromError(e);
     }
   }
 } 

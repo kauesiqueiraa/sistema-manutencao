@@ -10,10 +10,12 @@ import 'package:sistema_manutencao/services/chamado_predial_service.dart';
 import 'package:sistema_manutencao/services/chamado_industrial_service.dart';
 import 'package:sistema_manutencao/services/chamado_preventivo_service.dart';
 import 'package:sistema_manutencao/services/user_service.dart';
+import 'package:sistema_manutencao/services/produto_service.dart';
 import 'package:sistema_manutencao/viewmodels/mecanico_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_predial_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_industrial_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_preventivo_viewmodel.dart';
+import 'package:sistema_manutencao/viewmodels/produto_viewmodel.dart';
 import 'package:sistema_manutencao/views/mecanicos_view.dart';
 import 'package:sistema_manutencao/views/chamados_predial_view.dart';
 import 'package:sistema_manutencao/views/chamados_industrial_view.dart';
@@ -51,6 +53,21 @@ void main() async {
         Provider<ChamadoPredialService>(
           create: (_) => ChamadoPredialService(dio),
         ),
+        Provider<ChamadoIndustrialService>(
+          create: (context) => ChamadoIndustrialService(
+            context.read<Dio>(),
+          ),
+        ),
+        Provider<ChamadoPreventivoService>(
+          create: (context) => ChamadoPreventivoService(
+            context.read<Dio>(),
+          ),
+        ),
+        Provider<ProdutoService>(
+          create: (context) => ProdutoService(
+            context.read<Dio>(),
+          ),
+        ),
         ChangeNotifierProxyProvider2<AuthService, UserService, AuthViewModel>(
           create: (context) => AuthViewModel(
             context.read<AuthService>(),
@@ -71,6 +88,28 @@ void main() async {
           update: (context, service, mecanicoService, previous) => ChamadoPredialViewModel(
             service,
             mecanicoService,
+          ),
+        ),
+        ChangeNotifierProvider<ChamadoIndustrialViewModel>(
+          create: (context) => ChamadoIndustrialViewModel(
+            context.read<ChamadoIndustrialService>(),
+            context.read<MecanicoService>(),
+          ),
+        ),
+        ChangeNotifierProvider<ChamadoPreventivoViewModel>(
+          create: (context) => ChamadoPreventivoViewModel(
+            context.read<ChamadoPreventivoService>(),
+            context.read<ProdutoService>(),
+          ),
+        ),
+        ChangeNotifierProvider<MecanicoViewModel>(
+          create: (context) => MecanicoViewModel(
+            context.read<MecanicoService>(),
+          ),
+        ),
+        ChangeNotifierProvider<ProdutoViewModel>(
+          create: (context) => ProdutoViewModel(
+            context.read<ProdutoService>(),
           ),
         ),
       ],
@@ -117,7 +156,13 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoPreventivoViewModel(
-            ChamadoPreventivoService(Dio())
+            ChamadoPreventivoService(Dio()),
+            ProdutoService(context.read<Dio>()),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ProdutoViewModel(
+            ProdutoService(context.read<Dio>()),
           ),
         ),
       ],

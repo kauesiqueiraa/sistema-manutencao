@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_preventivo_model.dart';
+import '../models/produto_selecionado_model.dart';
 import '../services/chamado_preventivo_service.dart';
+import '../services/produto_service.dart';
 
 class ChamadoPreventivoViewModel extends ChangeNotifier {
   final ChamadoPreventivoService _service;
+  final ProdutoService _produtoService;
   List<ChamadoPreventivoModel> _chamados = [];
   List<ChamadoPreventivoModel> _chamadosFiltrados = [];
   final List<Map<String, String>> _mecanicos = [];
@@ -15,8 +19,9 @@ class ChamadoPreventivoViewModel extends ChangeNotifier {
   String _chapaFiltro = '';
   String _linhaFiltro = '';
   String _userMatricula = '';
+  Map<String, List<ProdutoSelecionadoModel>> produtosPorChamado = {};
 
-  ChamadoPreventivoViewModel(this._service);
+  ChamadoPreventivoViewModel(this._service, this._produtoService);
 
   List<ChamadoPreventivoModel> get chamados => _chamados;
   List<ChamadoPreventivoModel> get chamadosFiltrados => _chamadosFiltrados;
@@ -35,10 +40,9 @@ class ChamadoPreventivoViewModel extends ChangeNotifier {
     notifyListeners();
   } 
 
-  // List<ChamadoPreventivoModel> get chamadosFiltrados {
-  //   if (_statusFiltro.isEmpty) return _chamados;
-  //   return _chamados.where((c) => _statusFiltro.contains(c.status)).toList();
-  // }
+  List<ProdutoSelecionadoModel> getProdutosChamado(String chamadoNumero) {
+    return produtosPorChamado[chamadoNumero] ?? [];
+  }
 
   Future<void> carregarChamados() async {
     _isLoading = true;
@@ -60,8 +64,6 @@ class ChamadoPreventivoViewModel extends ChangeNotifier {
         dataFim: dataFimStr,
         // chapa: _chapaFiltro.isNotEmpty ? _chapaFiltro : null,
         // linha: _linhaFiltro.isNotEmpty ? _linhaFiltro : null,
-        
-
       );
       _aplicarFiltros();
     } catch (e) {
@@ -116,15 +118,6 @@ class ChamadoPreventivoViewModel extends ChangeNotifier {
     String? observacaoMecanico,
   }) async {
     try {
-      // String? dataInicioStr;
-      // String? horaInicioStr;
-
-      // if (status == '3') { // Em Atendimento
-      //   final now = DateTime.now();
-      //   dataInicioStr = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-      //   horaInicioStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
-      // }
-
       await _service.atualizarStatus(
         numero: numero,
         status: status,
@@ -142,58 +135,60 @@ class ChamadoPreventivoViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> iniciarAtendimento(String numeroChamado, String matricula) async {
-    try {
-      _isLoading = true;
-      _error = '';
-      notifyListeners();
-
-      if (matricula.isEmpty) {
-        throw Exception('Usuário não é um mecânico');
-      }
-
-      await _service.atualizarStatus(
-        numero: numeroChamado,
-        status: '3',
-        mecanico: matricula,
-        dataInicio: '',
-      );
-
-      // Atualiza a lista de chamados
-      await carregarChamados();
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+  void adicionarProdutos(String chamadoNumero, List<ProdutoSelecionadoModel> produtos) {
+    if (produtosPorChamado.containsKey(chamadoNumero)) {
+      produtosPorChamado[chamadoNumero]!.addAll(produtos);
+    } else {
+      produtosPorChamado[chamadoNumero] = produtos;
     }
+    notifyListeners();
   }
 
-  Future<void> finalizarAtendimento(String numeroChamado, String matricula, String observacao) async {
+  Future<void> finalizarChamado(
+      String chamadoNumero,
+      List<ProdutoSelecionadoModel> produtos,
+      String chapa,
+    ) async {
     try {
       _isLoading = true;
       _error = '';
       notifyListeners();
 
-      if (matricula.isEmpty) {
-        throw Exception('Usuário não é um mecânico');
+      // Salva os produtos no ZHP
+      if (produtos.isNotEmpty) {
+        List<Future> productRequests = [];
+        int itemCount = 1;
+
+        for (int i = 0; i < produtos.length; i++) {
+          final produto = produtos[i];
+          final itemFormatted = itemCount.toString().padLeft(3, '0');
+
+          productRequests.add(_produtoService.saveInZHP(
+            chamadoNumero,
+            produto.codigo,
+            produto.descricao,
+            int.parse(produto.quantidade),
+            chapa, // máquina
+            itemFormatted,
+            chamadoNumero, // OS
+          ));
+          itemCount++;
+        }
+        await Future.wait(productRequests);
       }
 
-      await _service.atualizarStatus(
-        numero: numeroChamado,
-        status: '4',
-        mecanico: matricula,
-        observacaoMecanico: observacao,
-      );
-
-      // Atualiza a lista de chamados
-      await carregarChamados();
-      notifyListeners();
+      Map<String, dynamic> automatedCalendar = {
+        'empresa': "040",
+        'filial': "01",
+        'chapa':  chapa,
+        'datapreve': getDataAtual(),
+      };
+      // Atualiza o calendário de chamados preventivos
+      await _service.automatedCalendar(automatedCalendar);
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
