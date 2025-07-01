@@ -54,13 +54,13 @@ void main() async {
           create: (_) => MecanicoService(),
         ),
         Provider<ChamadoPredialService>(
-          create: (_) => ChamadoPredialService(),
+          create: (context) => ChamadoPredialService(context.read<MecanicoService>()),
         ),
         Provider<ChamadoIndustrialService>(
-          create: (context) => ChamadoIndustrialService(),
+          create: (context) => ChamadoIndustrialService(context.read<MecanicoService>()),
         ),
         Provider<ChamadoPreventivoService>(
-          create: (context) => ChamadoPreventivoService(),
+          create: (context) => ChamadoPreventivoService(context.read<MecanicoService>()),
         ),
         Provider<ProdutoService>(
           create: (context) => ProdutoService(),
@@ -144,21 +144,19 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoPredialViewModel(
-            ChamadoPredialService(),
+            ChamadoPredialService(context.read<MecanicoService>()),
             MecanicoService(),
-      
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoIndustrialViewModel(
-            ChamadoIndustrialService(),
-            // ChamadoIndustrialService(context.read<Dio>(), context.read<MecanicoService>()),
+            ChamadoIndustrialService(context.read<MecanicoService>()),
             MecanicoService(),
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoPreventivoViewModel(
-            ChamadoPreventivoService(),
+            ChamadoPreventivoService(context.read<MecanicoService>()),
             ProdutoService(),
           ),
         ),

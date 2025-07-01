@@ -5,14 +5,14 @@ import 'package:sistema_manutencao/services/dio_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../exceptions/api_exception.dart';
 import '../models/chamado_industrial_model.dart';
-// import '../services/mecanico_service.dart';
+import '../services/mecanico_service.dart';
 
 class ChamadoIndustrialService {
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
-  // final MecanicoService _mecanicoService;
+  final MecanicoService _mecanicoService;
 
-  ChamadoIndustrialService();
-  // ChamadoIndustrialService(this._dio, this._mecanicoService);
+  // ChamadoIndustrialService();
+  ChamadoIndustrialService(this._mecanicoService);
 
   Future<List<ChamadoIndustrialModel>> getChamados({
     String? status,
@@ -70,47 +70,45 @@ class ChamadoIndustrialService {
       switch (status) {
         case '3': // Iniciar ou Retomar Atendimento
           // Verifica se o mecânico está disponível
-          // final mecanicoDisponivel = await _mecanicoService.findStatusMecanicoByMat(mecanico!);
-          // if (!mecanicoDisponivel) {
-          //   throw Exception('Você já está atendendo outro chamado. Finalize ou pause o atendimento atual antes de iniciar um novo.');
-          // }
-          // await _mecanicoService.updateMecanicoStatus(mecanico, 'A');
-          
+          final mecanicoDisponivel = await _mecanicoService.findStatusMecanicoByMat(mecanico!);
+          if (!mecanicoDisponivel) {
+            // ARRUMAR MSG
+            throw Exception('Você já está atendendo outro chamado. Finalize ou pause o atendimento atual antes de iniciar um novo.');
+          }
           if (dataInicio == '') {
             // Iniciar Atendimento
             data.addAll({
-              'mecan': mecanico ?? '',
+              'mecan': mecanico,
+              "nomemecan": "",
               'dtini': getDataAtual(),
               'hrini': getHoraAtual(),
             });
           } else {
             // Retomar Atendimento
             data.addAll({
-              'mecan': mecanico ?? '',
+              'mecan': mecanico,
             });
           }
+          await _mecanicoService.updateMecanicoStatus(mecanico, 'A');
           break;
 
         case '2': // Pausar
-          // await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'obsmec': observacaoMecanico ?? '',
           });
+          await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           break;
 
         case '4': // Finalizar
           if(mecanico2 != null && mecanico2.isNotEmpty) {
             await addSecondMecanic(numero, mecanico2);
           }
-          if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
-            throw Exception('É necessário informar uma observação ao finalizar o chamado');
-          }
-          // await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'dtfim': getDataAtual(),
             'hrfim': getHoraAtual(),
-            'obsmec': observacaoMecanico,
+            'obsmec': observacaoMecanico ?? '',
           });
+          await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           break;
       }
 

@@ -191,6 +191,8 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
     ChamadoPreventivoViewModel viewModel,
     UserModel? user,
   ) {
+    final userMatricula = user?.matricula;
+
     switch (chamado.status) {
       case '1': // Aberto
         return ElevatedButton(
@@ -225,28 +227,43 @@ class _ChamadosPreventivoViewState extends State<ChamadosPreventivoView> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
-              onPressed: () => _showUpdateStatusDialog(
-                context, 
-                chamado, 
-                viewModel,
-                user,
-                '2'
-              ),
+              onPressed: () async {
+                if (userMatricula != chamado.mecanico) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Esse chamado está sendo atendido por outro Mecânico!', style: TextStyle(color: Colors.white),), backgroundColor: Colors.red, ),
+                  );
+                  return;
+                }
+                await _showUpdateStatusDialog(
+                  context, 
+                  chamado, 
+                  viewModel,
+                  user,
+                  '2'
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
               ),
               child: const Text('Pausar', style: TextStyle(color: Colors.white),),
             ),
             ElevatedButton(
-              onPressed: () => {
-                viewModel.finalizarChamado(chamado.num, chamado.produtos, chamado.chapa),
-                _showUpdateStatusDialog(
+              onPressed: () async {
+                if (userMatricula != chamado.mecanico) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Esse chamado está sendo atendido por outro Mecânico!', style: TextStyle(color: Colors.white),), backgroundColor: Colors.red),
+                  );
+                  return;
+                }
+
+                await viewModel.finalizarChamado(chamado.num, chamado.produtos, chamado.chapa);
+                await _showUpdateStatusDialog(
                   context, 
                   chamado, 
                   viewModel, 
                   user,
                   '4'
-                ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,

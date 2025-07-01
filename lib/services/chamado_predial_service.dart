@@ -4,13 +4,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sistema_manutencao/exceptions/api_exception.dart';
 import 'package:sistema_manutencao/services/dio_service.dart';
+import 'package:sistema_manutencao/services/mecanico_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_predial_model.dart';
 
 class ChamadoPredialService {
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
+  final MecanicoService _mecanicoService;
 
-  ChamadoPredialService();
+  ChamadoPredialService(this._mecanicoService);
 
   Future<List<ChamadoPredialModel>> getChamados() async {
     try {
@@ -37,7 +39,7 @@ class ChamadoPredialService {
     }
   }
 
-  Future<void> atualizarStatus({
+  Future<bool> atualizarStatus({
     required String numero,
     required String status,
     String? mecanico,
@@ -57,10 +59,16 @@ class ChamadoPredialService {
 
       switch (status) {
         case '3': // Iniciar ou Retomar Atendimento
+          final mecanicoDisponivel = await _mecanicoService.findStatusMecanicoByMat(mecanico!);
+          if (!mecanicoDisponivel) {
+            return false;
+          }
+          await _mecanicoService.updateMecanicoStatus(mecanico, 'A');
+
           if (dataInicio == '00/00/00') {
             // Iniciar Atendimento
             data.addAll({
-              'mecani': mecanico ?? '',
+              'mecani': mecanico,
               'mecan2': mecanico2 ?? '',
               'dtini': getDataAtual(),
               'hrini': getHoraAtual(),
@@ -75,6 +83,7 @@ class ChamadoPredialService {
           break;
 
         case '2': // Pausar
+          await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'dtipsa': getDataAtual(),
             'hripsa': getHoraAtual(),
@@ -89,6 +98,7 @@ class ChamadoPredialService {
           if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
             throw Exception('É necessário informar uma observação ao finalizar o chamado');
           }
+          await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'dtfim': getDataAtual(),
             'hrfim': getHoraAtual(),
@@ -105,6 +115,7 @@ class ChamadoPredialService {
       if (response.statusCode != 200) {
         throw Exception('Falha ao atualizar status do chamado');
       }
+      return true;
     } catch (e) {
       throw Exception('Erro ao atualizar status do chamado: $e');
     }

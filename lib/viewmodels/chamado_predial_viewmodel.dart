@@ -137,7 +137,7 @@ class ChamadoPredialViewModel extends ChangeNotifier {
         return;
       }
 
-      await _service.atualizarStatus(
+      final result = await _service.atualizarStatus(
         numero: numero,
         status: status,
         mecanico: mecanico,
@@ -152,6 +152,11 @@ class ChamadoPredialViewModel extends ChangeNotifier {
         horaFim: horaFim,
         observacaoMecanico: observacaoMecanico,
       );
+      if (result == false && status == '3') {
+        _error = 'Você já está atendendo outro chamado. Finalize ou pause o atendimento atual antes de iniciar um novo.';
+        notifyListeners();
+        return;
+      }
       await carregarChamados();
     } catch (e) {
       _error = e.toString();
@@ -260,5 +265,10 @@ class ChamadoPredialViewModel extends ChangeNotifier {
       _error = e.toString();
       notifyListeners();
     }
+  }
+
+  void limparErro() {
+    _error = '';
+    notifyListeners();
   }
 } 

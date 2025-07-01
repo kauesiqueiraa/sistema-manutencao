@@ -5,7 +5,7 @@ class MecanicoModel {
   final String status;
   final String setmanu;
   final String setor;
-  final String empatend;
+  final String empresaAtendimento;
 
   MecanicoModel({
     required this.matricula,
@@ -14,7 +14,7 @@ class MecanicoModel {
     required this.status,
     required this.setmanu,
     required this.setor,
-    required this.empatend,
+    required this.empresaAtendimento,
   });
 
   factory MecanicoModel.fromJson(Map<String, dynamic> json) {
@@ -25,7 +25,7 @@ class MecanicoModel {
       status: json['status']?.toString() ?? '',
       setmanu: json['setmanu']?.toString() ?? '',
       setor: json['setor']?.toString() ?? '',
-      empatend: json['empatend']?.toString() ?? '',
+      empresaAtendimento: json['empatendi']?.toString() ?? '',
     );
   }
 
@@ -33,6 +33,17 @@ class MecanicoModel {
   bool get isEmAtendimento => status.contains('A=Atendimento');
   bool get isIndustrial => setmanu.contains('I=Industrial');
   bool get isPredial => setmanu.contains('P=Predial');
+
+  bool get empAtendTresPontas => empresaAtendimento.contains('0401');
+  bool get empAtendVarginha => empresaAtendimento.contains('0902');
+  bool get empAtendMonsenhorPaulo => empresaAtendimento.contains('0903');
+
+  String get nomeEmpresaAtendimento {
+    if (empAtendTresPontas) return 'Três Pontas';
+    if (empAtendVarginha) return 'Varginha';
+    if (empAtendMonsenhorPaulo) return 'Monsenhor Paulo';
+    return 'Empresa Desconhecida';
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -42,7 +53,7 @@ class MecanicoModel {
       'status': status,
       'setmanu': setmanu,
       'setor': setor,
-      'empatend': empatend,
+      'empresaAtendimento': nomeEmpresaAtendimento,
     };
   }
 } 

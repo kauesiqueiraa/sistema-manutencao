@@ -123,6 +123,14 @@ class HomeView extends StatelessWidget {
       //   title: 'Mecânicos',
       //   icon: Icons.group,
       // ),
+      _buildSubSection(
+          context,
+          title: 'Mecânicos',
+          icon: Icons.group,
+          onTap: () {
+            context.go('/mecanicos');
+          },
+      ),
       const SizedBox(height: 12),
       _buildSubSection(
         context,
@@ -132,14 +140,6 @@ class HomeView extends StatelessWidget {
           context.go('/inventario-maquinas');
         },
       ),
-        _buildSubSection(
-          context,
-          title: 'Mecânicos',
-          icon: Icons.group,
-          onTap: () {
-            context.go('/mecanicos');
-          },
-        ),
         // const SizedBox(height: 12),
         // _buildSubSection(
         //   context,
@@ -208,53 +208,53 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildDisabledSubSection(
-  BuildContext context, {
-  required String title,
-  required IconData icon,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      IgnorePointer(
-        child: Opacity(
-          opacity: 0.5,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(icon, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(Icons.lock_outline),
-              ],
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 4),
-      const Text(
-        'Em breve',
-        style: TextStyle(
-          fontSize: 12,
-          fontStyle: FontStyle.italic,
-          color: Colors.grey,
-        ),
-      ),
-      const SizedBox(height: 12),
-    ],
-  );
-}
+  // Widget _buildDisabledSubSection(
+  //   BuildContext context, {
+  //   required String title,
+  //   required IconData icon,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       IgnorePointer(
+  //         child: Opacity(
+  //           opacity: 0.5,
+  //           child: Container(
+  //             width: double.infinity,
+  //             padding: const EdgeInsets.all(16),
+  //             decoration: BoxDecoration(
+  //               color: Colors.grey[100],
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //             child: Row(
+  //               children: [
+  //                 Icon(icon, color: Theme.of(context).primaryColor),
+  //                 const SizedBox(width: 8),
+  //                 Text(
+  //                   title,
+  //                   style: const TextStyle(
+  //                     fontSize: 16,
+  //                     fontWeight: FontWeight.w500,
+  //                   ),
+  //                 ),
+  //                 const Spacer(),
+  //                 const Icon(Icons.lock_outline),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 4),
+  //       const Text(
+  //         'Em breve',
+  //         style: TextStyle(
+  //           fontSize: 12,
+  //           fontStyle: FontStyle.italic,
+  //           color: Colors.grey,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 12),
+  //     ],
+  //   );
+  // }
 } 

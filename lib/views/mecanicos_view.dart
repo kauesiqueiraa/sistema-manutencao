@@ -24,15 +24,12 @@ class _MecanicosViewState extends State<MecanicosView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mecânicos'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.goNamed('home');
-            },
-            icon: const Icon(Icons.arrow_back_ios), 
-          ),
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white,),
+          onPressed: () => context.goNamed('home'),
+        ),
+        title: const Text('Mecânicos', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontFamily: 'Inter'),),
+        backgroundColor: const Color.fromRGBO(33, 58, 98, 1),
       ),
       body: Column(
         children: [
@@ -149,7 +146,7 @@ class _MecanicosViewState extends State<MecanicosView> {
           mecanico.nome,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Matrícula: ${mecanico.matricula}\n Empresa: ${mecanico.empatend}'),
+        subtitle: Text('Matrícula: ${mecanico.matricula}\n Empresa: ${mecanico.nomeEmpresaAtendimento}'),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(

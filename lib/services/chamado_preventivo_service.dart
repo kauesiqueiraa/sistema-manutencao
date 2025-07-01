@@ -2,14 +2,16 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sistema_manutencao/services/dio_service.dart';
+import 'package:sistema_manutencao/services/mecanico_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_preventivo_model.dart';
 import '../exceptions/api_exception.dart';
 
 class ChamadoPreventivoService {
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
+  final MecanicoService _mecanicoService;
 
-  ChamadoPreventivoService();
+  ChamadoPreventivoService(this._mecanicoService);
 
   Future<List<ChamadoPreventivoModel>> getChamados({
     String? status,
@@ -60,10 +62,15 @@ class ChamadoPreventivoService {
 
       switch (status) {
          case '3': // Iniciar ou Retomar Atendimento
+          final mecanicoDisponivel = await _mecanicoService.findStatusMecanicoByMat(mecanico!);
+          if (!mecanicoDisponivel) {
+            throw Exception('Você já está atendendo outro chamado. Finalize ou pause o atendimento atual antes de iniciar um novo.');
+          }
+          await _mecanicoService.updateMecanicoStatus(mecanico, 'A');
           if (dataInicio == '') {
             // Iniciar Atendimento
             data.addAll({
-              'mecan': mecanico ?? '',
+              'mecan': mecanico,
               'dtini': getDataAtual(),
               'hrini': getHoraAtual(),
             });
@@ -76,6 +83,7 @@ class ChamadoPreventivoService {
           break;
 
         case '2': // Pausar
+          await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'obsmec': observacaoMecanico ?? '',
           });
@@ -85,6 +93,7 @@ class ChamadoPreventivoService {
           if (observacaoMecanico == null || observacaoMecanico.isEmpty) {
             throw Exception('É necessário informar uma observação ao finalizar o chamado');
           }
+          await _mecanicoService.updateMecanicoStatus(mecanico!, 'D');
           data.addAll({
             'dtfim': getDataAtual(),
             'hrfim': getHoraAtual(),

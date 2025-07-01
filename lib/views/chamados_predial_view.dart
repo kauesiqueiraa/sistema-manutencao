@@ -53,25 +53,35 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
           Expanded(
             child: Consumer<ChamadoPredialViewModel>(
               builder: (context, viewModel, child) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (viewModel.error.isNotEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Atenção'),
+                        content: Text(viewModel.error),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              viewModel.alterarFiltroStatus(viewModel.statusFiltro); // Limpa erro
+                              viewModel.limparErro();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                });
                 if (viewModel.isLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
-                if (viewModel.error.isNotEmpty) {
-                  return Center(
-                    child: Text(
-                      'Erro: ${viewModel.error}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-
                 if (viewModel.chamadosFiltrados.isEmpty) {
                   return const Center(
                     child: Text('Nenhum chamado encontrado'),
                   );
                 }
-
                 return SmartRefresher(
                   controller: _refreshController,
                   enablePullDown: true,
@@ -109,9 +119,9 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
                 const SizedBox(width: 8),
                 _buildFilterChip('Abertos', '1', viewModel),
                 const SizedBox(width: 8),
-                _buildFilterChip('Pausados', '2', viewModel),
-                const SizedBox(width: 8),
                 _buildFilterChip('Em Atendimento', '3', viewModel),
+                const SizedBox(width: 8),
+                _buildFilterChip('Pausados', '2', viewModel),
                 const SizedBox(width: 8),
                 _buildFilterChip('Finalizados', '4', viewModel),
               ],
@@ -244,12 +254,13 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
     TextEditingController observacaoController,
     UserModel? user,
   ) {
-    // final userMatricula = user?.matricula;
+    final userMatricula = user?.matricula;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (chamado.status == '1') // Aberto
+        if (chamado.status == '1') 
+          // Aberto
           ElevatedButton(
             onPressed: () => _showUpdateStatusDialog(
               context,
@@ -266,40 +277,53 @@ class _ChamadosPredialViewState extends State<ChamadosPredialView> {
         if (chamado.status == '3') ...[
           // Em Atendimento
           ElevatedButton(
-            onPressed: () => _showUpdateStatusDialog(
-              context,
-              chamado,
-              viewModel,
-              user,
-              '2', // Pausado
-            ),
+            onPressed: () async {
+              if (userMatricula != chamado.mecanico) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Esse chamado está sendo atendido por outro Mecânico!', style: TextStyle(color: Colors.white),), backgroundColor: Colors.red, ),
+                );
+                return;
+              }
+              await _showUpdateStatusDialog(
+                context,
+                chamado,
+                viewModel,
+                user,
+                '2', // Pausado
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
             child: const Text('Pausar', style: TextStyle(color: Colors.white),),
           ),
           const SizedBox(width: 8),
-          // if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
-            ElevatedButton(
-              onPressed: () async {
-                if (observacaoController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Informe uma observação para finalizar o chamado')),
-                  );
-                  return;
-                }
-                await viewModel.atualizarStatus(
-                  numero: chamado.num,
-                  status: '4',
-                  observacaoMecanico: observacaoController.text,
-                  mecanico2: _mecanic2Selected[chamado.mecanico2],
+          ElevatedButton(
+            onPressed: () async {
+              if (userMatricula != chamado.mecanico) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Esse chamado está sendo atendido por outro Mecânico!', style: TextStyle(color: Colors.white),), backgroundColor: Colors.red),
                 );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-              ),
-              child: const Text('Finalizar', style: TextStyle(color: Colors.white),),
+                return;
+              }
+              if (observacaoController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Informe uma observação para finalizar o chamado')),
+                );
+                return;
+              }
+              await viewModel.atualizarStatus(
+                numero: chamado.num,
+                status: '4',
+                observacaoMecanico: observacaoController.text,
+                mecanico2: _mecanic2Selected[chamado.mecanico2],
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
             ),
+            child: const Text('Finalizar', style: TextStyle(color: Colors.white),),
+          ),
         ],
         if (chamado.status == '2') // Pausado
           ElevatedButton(

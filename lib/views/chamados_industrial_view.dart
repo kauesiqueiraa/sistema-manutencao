@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sistema_manutencao/models/user_model.dart';
 import 'package:sistema_manutencao/viewmodels/auth_viewmodel.dart';
-// import 'package:sistema_manutencao/widgets/error_page.dart';
 import '../viewmodels/chamado_industrial_viewmodel.dart';
 import '../models/chamado_industrial_model.dart';
 
@@ -27,6 +26,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
         final viewModel = context.read<ChamadoIndustrialViewModel>();
         viewModel.carregarChamados();
         viewModel.carregarMecanicos();
+        viewModel.resetarPeriodo();
       });
   }
 
@@ -39,18 +39,34 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
           icon: const Icon(Icons.arrow_back, color: Colors.white,),
           onPressed: () => context.goNamed('home'),
         ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {
-        //       context.goNamed('home');
-        //     },
-        //     icon: const Icon(Icons.arrow_back_ios, color: Colors.white,),
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final viewModel = context.read<ChamadoIndustrialViewModel>();
+              final data = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2024),
+                lastDate: DateTime(2030),
+                initialDateRange: viewModel.dataInicio != null && viewModel.dataFim != null
+                    ? DateTimeRange(
+                        start: viewModel.dataInicio!,
+                        end: viewModel.dataFim!,
+                      )
+                    : null,
+              );
+              if (data != null) {
+                viewModel.alterarPeriodo(data.start, data.end);
+                viewModel.carregarChamados();
+              }
+            },
+            icon: const Icon(Icons.calendar_today, color: Colors.white,),
+          ),
+        ],
         backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Column(
         children: [
+         
           _buildFiltros(),
           Expanded(
             child: Consumer<ChamadoIndustrialViewModel>(
@@ -58,16 +74,6 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
                 if (viewModel.isLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
-                // if (viewModel.error.isNotEmpty) {
-                //   return ErrorPage(
-                //     message: viewModel.error,
-                //     onRetry: () {
-                //       viewModel.carregarChamados();
-                //       viewModel.carregarMecanicos();
-                //     },
-                //   );
-                // }
 
                 if (viewModel.error.isNotEmpty) {
                  return const Center(
@@ -131,9 +137,9 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
           const SizedBox(width: 8),
           _buildFilterChip('Abertos', '1', viewModel),
           const SizedBox(width: 8),
-          _buildFilterChip('Pausados', '2', viewModel),
-          const SizedBox(width: 8),
           _buildFilterChip('Em Atendimento', '3', viewModel),
+          const SizedBox(width: 8),
+          _buildFilterChip('Pausados', '2', viewModel),
           const SizedBox(width: 8),
           _buildFilterChip('Finalizados', '4', viewModel),
         ],
@@ -159,48 +165,6 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
       checkmarkColor: Colors.white,
     );
   }
-
-  // Widget _buildPeriodoFilter(ChamadoIndustrialViewModel viewModel) {
-  //   return Row(
-  //     children: [
-  //       Expanded(
-  //         child: TextButton.icon(
-  //           onPressed: () async {
-  //             final data = await showDateRangePicker(
-  //               context: context,
-  //               firstDate: DateTime(2020),
-  //               lastDate: DateTime.now(),
-  //               initialDateRange: viewModel.dataInicio != null && viewModel.dataFim != null
-  //                   ? DateTimeRange(
-  //                       start: viewModel.dataInicio!,
-  //                       end: viewModel.dataFim!,
-  //                     )
-  //                   : null,
-  //             );
-  //             if (data != null) {
-  //               viewModel.alterarPeriodo(data.start, data.end);
-  //               viewModel.carregarChamados();
-  //             }
-  //           },
-  //           icon: const Icon(Icons.calendar_today),
-  //           label: Text(
-  //             viewModel.dataInicio != null && viewModel.dataFim != null
-  //                 ? '${viewModel.dataInicio!.day}/${viewModel.dataInicio!.month}/${viewModel.dataInicio!.year} - ${viewModel.dataFim!.day}/${viewModel.dataFim!.month}/${viewModel.dataFim!.year}'
-  //                 : 'Selecionar Período',
-  //           ),
-  //         ),
-  //       ),
-  //       if (viewModel.dataInicio != null && viewModel.dataFim != null)
-  //         IconButton(
-  //           onPressed: () {
-  //             viewModel.alterarPeriodo(null, null);
-  //             viewModel.carregarChamados();
-  //           },
-  //           icon: const Icon(Icons.clear),
-  //         ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildChamadoCard(
     ChamadoIndustrialModel chamado,
@@ -311,7 +275,7 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
     TextEditingController observacaoController,
     UserModel? user,
   ) {
-    // final userMatricula = user?.matricula;
+    final userMatricula = user?.matricula;
     
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -333,22 +297,36 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
         if (chamado.status == '3') ...[
           // Em Atendimento
           ElevatedButton(
-            onPressed: () => _showUpdateStatusDialog(
-              context,
-              chamado,
-              viewModel,
-              user,
-              '2', // Pausado
-            ),
+             onPressed: () async {
+              if (userMatricula != chamado.mecanico) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Esse chamado está sendo atendido por outro Mecânico!', style: TextStyle(color: Colors.white),), backgroundColor: Colors.red, ),
+                );
+                return;
+              }
+              await _showUpdateStatusDialog(
+                context,
+                chamado,
+                viewModel,
+                user,
+                '2'
+              );// Pausado
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
             child: const Text('Pausar', style: TextStyle(color: Colors.white),),
           ),
           const SizedBox(width: 8),
-          // if (userMatricula == chamado.mecanico || userMatricula == chamado.mecanico2)
             ElevatedButton(
               onPressed: () async {
+                if (userMatricula != chamado.mecanico) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Esse chamado está sendo atendido por outro Mecânico!', style: TextStyle(color: Colors.white),), backgroundColor: Colors.red),
+                  );
+                  return;
+                }
+
                 if (observacaoController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Informe uma observação para finalizar o chamado')),
@@ -422,26 +400,6 @@ class _ChamadosIndustrialViewState extends State<ChamadosIndustrialView> {
       horaFim: novoStatus == '4' ? horaAtual : null,   
     );
   }
-
-  // Future<void> statusMecanico() async {
-  //   final mecanicoDisponivel = await viewModel.mecanicoDiponivel(userMatricula!);
-
-  //   if (!mecanicoDisponivel) {
-  //     showDialog(
-  //       context: context,
-  //       builder: (context) => AlertDialog(
-  //         title: const Text('Mecânico ocupado'),
-  //         content: const Text('Você já está atendendo outro chamado. Finalize-o antes de iniciar outro.'),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () => Navigator.of(context).pop(),
-  //             child: const Text('OK'),
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   }
-  // }
 
   @override
   void dispose() {

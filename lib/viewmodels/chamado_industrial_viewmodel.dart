@@ -98,6 +98,12 @@ class ChamadoIndustrialViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void resetarPeriodo() {
+    _dataInicio = null;
+    _dataFim = null;
+    notifyListeners();
+  }
+
   void alterarFiltroChapa(String chapa) {
     _chapaFiltro = chapa;
     _aplicarFiltros();
