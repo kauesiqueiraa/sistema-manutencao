@@ -5,6 +5,7 @@ class MecanicoModel {
   final String status;
   final String setmanu;
   final String setor;
+  final String empatend;
 
   MecanicoModel({
     required this.matricula,
@@ -13,6 +14,7 @@ class MecanicoModel {
     required this.status,
     required this.setmanu,
     required this.setor,
+    required this.empatend,
   });
 
   factory MecanicoModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class MecanicoModel {
       status: json['status']?.toString() ?? '',
       setmanu: json['setmanu']?.toString() ?? '',
       setor: json['setor']?.toString() ?? '',
+      empatend: json['empatend']?.toString() ?? '',
     );
   }
 
@@ -39,6 +42,7 @@ class MecanicoModel {
       'status': status,
       'setmanu': setmanu,
       'setor': setor,
+      'empatend': empatend,
     };
   }
 } 

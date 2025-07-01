@@ -1,17 +1,17 @@
 import 'package:dio/dio.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/services/dio_service.dart';
 import '../models/mecanico_model.dart';
 
 class MecanicoService {
-  final Dio _dio;
-  // final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
-  final String _baseUrl = "http://172.16.50.12:9002";
+  final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
+  // final String _baseUrl = "http://172.16.50.12:9002";
 
-  MecanicoService(this._dio);
+  MecanicoService();
 
   Future<List<MecanicoModel>> getMecanicos({required String setor}) async {
     try {
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/WSMECANI/retmec',
         queryParameters: {
           'empfil': '0401',
@@ -31,7 +31,7 @@ class MecanicoService {
 
   Future<MecanicoModel?> findMecanicoByUserId(String userId) async {
     try {
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/WSMECANI/retmec',
         queryParameters: {
           'empfil': '0401',
@@ -58,7 +58,7 @@ class MecanicoService {
 
   Future<bool> findStatusMecanicoByMat(String mat) async {
     try {
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/WSMECANI/retmec',
         queryParameters: {
           'empfil': '0401',
@@ -83,7 +83,7 @@ class MecanicoService {
 
   Future<void> updateMecanicoStatus(String mat, String status) async {
     try {
-      final Response<dynamic> response = await _dio.put(
+      final Response<dynamic> response = await DioService.dio.put(
         '$_baseUrl/rest/WSMECANI/',
         options: Options(
           headers: {'Content-Type': 'application/json', },

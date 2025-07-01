@@ -118,25 +118,28 @@ class HomeView extends StatelessWidget {
   Widget _buildAcessoRapidoSection(BuildContext context) {
     return Column(
       children: [
-       _buildDisabledSubSection(
-        context,
-        title: 'Mecânicos',
-        icon: Icons.group,
-      ),
+      //  _buildDisabledSubSection(
+      //   context,
+      //   title: 'Mecânicos',
+      //   icon: Icons.group,
+      // ),
       const SizedBox(height: 12),
-      _buildDisabledSubSection(
+      _buildSubSection(
         context,
         title: 'Inventário de Máquinas',
         icon: Icons.inventory_2,
+        onTap: () {
+          context.go('/inventario-maquinas');
+        },
       ),
-        // _buildSubSection(
-        //   context,
-        //   title: 'Mecânicos',
-        //   icon: Icons.group,
-        //   onTap: () {
-        //     context.go('/mecanicos');
-        //   },
-        // ),
+        _buildSubSection(
+          context,
+          title: 'Mecânicos',
+          icon: Icons.group,
+          onTap: () {
+            context.go('/mecanicos');
+          },
+        ),
         // const SizedBox(height: 12),
         // _buildSubSection(
         //   context,

@@ -149,7 +149,7 @@ class _MecanicosViewState extends State<MecanicosView> {
           mecanico.nome,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Matrícula: ${mecanico.matricula}'),
+        subtitle: Text('Matrícula: ${mecanico.matricula}\n Empresa: ${mecanico.empatend}'),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(

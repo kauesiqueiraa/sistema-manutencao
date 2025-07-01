@@ -5,17 +5,20 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sistema_manutencao/services/auth_service.dart';
 import 'package:sistema_manutencao/services/dio_service.dart';
+import 'package:sistema_manutencao/services/inventory_service.dart';
 import 'package:sistema_manutencao/services/mecanico_service.dart';
 import 'package:sistema_manutencao/services/chamado_predial_service.dart';
 import 'package:sistema_manutencao/services/chamado_industrial_service.dart';
 import 'package:sistema_manutencao/services/chamado_preventivo_service.dart';
 import 'package:sistema_manutencao/services/user_service.dart';
 import 'package:sistema_manutencao/services/produto_service.dart';
+import 'package:sistema_manutencao/viewmodels/inventory_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/mecanico_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_predial_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_industrial_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/chamado_preventivo_viewmodel.dart';
 import 'package:sistema_manutencao/viewmodels/produto_viewmodel.dart';
+import 'package:sistema_manutencao/views/inventory_view.dart';
 import 'package:sistema_manutencao/views/mecanicos_view.dart';
 import 'package:sistema_manutencao/views/chamados_predial_view.dart';
 import 'package:sistema_manutencao/views/chamados_industrial_view.dart';
@@ -48,25 +51,19 @@ void main() async {
           create: (_) => UserService(),
         ),
         Provider<MecanicoService>(
-          create: (_) => MecanicoService(dio),
+          create: (_) => MecanicoService(),
         ),
         Provider<ChamadoPredialService>(
-          create: (_) => ChamadoPredialService(dio),
+          create: (_) => ChamadoPredialService(),
         ),
         Provider<ChamadoIndustrialService>(
-          create: (context) => ChamadoIndustrialService(
-            context.read<Dio>(),
-          ),
+          create: (context) => ChamadoIndustrialService(),
         ),
         Provider<ChamadoPreventivoService>(
-          create: (context) => ChamadoPreventivoService(
-            context.read<Dio>(),
-          ),
+          create: (context) => ChamadoPreventivoService(),
         ),
         Provider<ProdutoService>(
-          create: (context) => ProdutoService(
-            context.read<Dio>(),
-          ),
+          create: (context) => ProdutoService(),
         ),
         ChangeNotifierProxyProvider2<AuthService, UserService, AuthViewModel>(
           create: (context) => AuthViewModel(
@@ -112,6 +109,11 @@ void main() async {
             context.read<ProdutoService>(),
           ),
         ),
+        ChangeNotifierProvider<InventoryViewmodel>(
+          create: (context) => InventoryViewmodel(
+            InventoryService(),
+          ),
+        )
       ],
       child: const MyApp(),
     ),
@@ -132,39 +134,44 @@ class MyApp extends StatelessWidget {
           create: (context) => AuthViewModel(
             AuthService(),
             UserService(),
-            MecanicoService(context.read<Dio>()),
+            MecanicoService(),
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => MecanicoViewModel(
-            MecanicoService(context.read<Dio>()),
+            MecanicoService(),
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoPredialViewModel(
-            ChamadoPredialService(context.read<Dio>()),
-            MecanicoService(context.read<Dio>()),
+            ChamadoPredialService(),
+            MecanicoService(),
       
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoIndustrialViewModel(
-            ChamadoIndustrialService(context.read<Dio>()),
+            ChamadoIndustrialService(),
             // ChamadoIndustrialService(context.read<Dio>(), context.read<MecanicoService>()),
-            MecanicoService(context.read<Dio>()),
+            MecanicoService(),
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => ChamadoPreventivoViewModel(
-            ChamadoPreventivoService(Dio()),
-            ProdutoService(context.read<Dio>()),
+            ChamadoPreventivoService(),
+            ProdutoService(),
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => ProdutoViewModel(
-            ProdutoService(context.read<Dio>()),
+            ProdutoService(),
           ),
         ),
+        ChangeNotifierProvider(
+          create: (context) => InventoryViewmodel(
+            InventoryService(),
+          ),
+        )
       ],
       child: MaterialApp.router(
         title: 'Sistema de Manutenção',
@@ -193,6 +200,14 @@ class MyApp extends StatelessWidget {
               name: 'mecanicos',
               builder: (context, state) => const TimeoutWrapper(
                 child: MecanicosView(),
+              ),
+            ),
+            GoRoute(
+              path: '/inventario-maquinas',
+              name: 'inventario-maquinas',
+              builder: (context, state) => const TimeoutWrapper(
+                child: InventoryView(),
+                // child: InventarioMaquinasView(),
               ),
             ),
             GoRoute(

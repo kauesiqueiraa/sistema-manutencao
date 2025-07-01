@@ -30,7 +30,7 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
 
       _authModel = await _authService.login(username, password);
-      final userData = await _userService.getUserData(username, _authModel!.accessToken);
+      final userData = await _userService.getUserData(username);
       final mecanico = await _mecanicoService.findMecanicoByUserId(userData.id);
       
       if (mecanico != null) {
@@ -86,7 +86,7 @@ class AuthViewModel extends ChangeNotifier {
       );
 
       try {
-        final userData = await _userService.getUserData(username, accessToken);
+        final userData = await _userService.getUserData(username);
         final mecanico = await _mecanicoService.findMecanicoByUserId(userData.id);
         
         if (mecanico != null) {

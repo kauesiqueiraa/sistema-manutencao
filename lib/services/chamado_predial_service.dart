@@ -3,18 +3,18 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sistema_manutencao/exceptions/api_exception.dart';
+import 'package:sistema_manutencao/services/dio_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_predial_model.dart';
 
 class ChamadoPredialService {
-  final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
-  ChamadoPredialService(this._dio);
+  ChamadoPredialService();
 
   Future<List<ChamadoPredialModel>> getChamados() async {
     try {
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/zws_zmp/get_all',
         options: Options(
           headers: {'Content-Type': 'application/json'},
@@ -97,7 +97,7 @@ class ChamadoPredialService {
           break;
       }
 
-      final response = await _dio.put(
+      final response = await DioService.dio.put(
         '$_baseUrl/rest/zws_zmp/update',
         data: data,
       );
@@ -112,7 +112,7 @@ class ChamadoPredialService {
 
   Future<void> addSecondMecanic(String num, String mecanico2) async {
     try { 
-      final response = await _dio.put(
+      final response = await DioService.dio.put(
         '$_baseUrl/rest/zws_zmp/mecanico',
         data: {
           'num': num,

@@ -2,19 +2,19 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/services/dio_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/produto_model.dart';
 import '../exceptions/api_exception.dart';
 
 class ProdutoService {
-  final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
-  ProdutoService(this._dio);
+  ProdutoService();
 
   Future<List<ProdutoModel>> buscarProdutos(String query) async {
     try {
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/zws_sb1/get_all',
         queryParameters: {
           'descri': query,
@@ -47,7 +47,7 @@ class ProdutoService {
   // Produtos utilizados no chamados
   Future<void> saveInZHP(String num, String cod, String descri, int qtd, String chapa, String item, String os) async {
     try {
-      final response = await _dio.post(
+      final response = await DioService.dio.post(
         '$_baseUrl/rest/zws_zhp/',
         options: Options(
           headers: {

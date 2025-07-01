@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/services/dio_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../models/chamado_preventivo_model.dart';
 import '../exceptions/api_exception.dart';
 
 class ChamadoPreventivoService {
-  final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
-  ChamadoPreventivoService(this._dio);
+  ChamadoPreventivoService();
 
   Future<List<ChamadoPreventivoModel>> getChamados({
     String? status,
@@ -26,7 +26,7 @@ class ChamadoPreventivoService {
       if (linha != null) 'linha': linha,
     };
 
-    final response = await _dio.get(
+    final response = await DioService.dio.get(
       '$_baseUrl/rest/zws_zmd/get_all',
       queryParameters: queryParams,
       options: Options(
@@ -92,7 +92,7 @@ class ChamadoPreventivoService {
           });
           break;
       }
-      final response = await _dio.put(
+      final response = await DioService.dio.put(
         '$_baseUrl/rest/zws_zmd/update',
         // options: Options(
         //   headers: {
@@ -115,7 +115,7 @@ class ChamadoPreventivoService {
     try {
       final jsonData = jsonEncode(automatedCalendar);
 
-      final response = await _dio.post(
+      final response = await DioService.dio.post(
         '$_baseUrl/rest/wsreppre',
         options: Options(
           headers: {

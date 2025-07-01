@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/services/dio_service.dart';
 import 'package:sistema_manutencao/utils/time_date.dart';
 import '../exceptions/api_exception.dart';
 import '../models/chamado_industrial_model.dart';
 // import '../services/mecanico_service.dart';
 
 class ChamadoIndustrialService {
-  final Dio _dio;
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
   // final MecanicoService _mecanicoService;
 
-  ChamadoIndustrialService(this._dio);
+  ChamadoIndustrialService();
   // ChamadoIndustrialService(this._dio, this._mecanicoService);
 
   Future<List<ChamadoIndustrialModel>> getChamados({
@@ -26,7 +26,7 @@ class ChamadoIndustrialService {
         if (dataInicio != null) 'periodo': '$dataInicio$dataFim',
       };
 
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/zws_zmc_new/get_all',
         queryParameters: queryParams,
         options: Options(
@@ -114,7 +114,7 @@ class ChamadoIndustrialService {
           break;
       }
 
-      final response = await _dio.put(
+      final response = await DioService.dio.put(
         '$_baseUrl/rest/zws_zmc_new/update',
         data: data,
       );
@@ -131,7 +131,7 @@ class ChamadoIndustrialService {
 
   Future<void> addSecondMecanic(String num, String mecanico2) async {
     try { 
-      final response = await _dio.put(
+      final response = await DioService.dio.put(
         '$_baseUrl/rest/zws_zmc_new/mecanico',
         data: {
           'num': num,

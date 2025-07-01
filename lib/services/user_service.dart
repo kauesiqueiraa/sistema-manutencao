@@ -1,21 +1,15 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sistema_manutencao/services/dio_service.dart';
 import '../models/user_model.dart';
 
 class UserService {
-  final Dio _dio = Dio();
   final String _baseUrl = dotenv.env['BASE_TESTE_URL'] ?? '';
 
-  Future<UserModel> getUserData(String username, String token) async {
+  Future<UserModel> getUserData(String username) async {
     try {
-      final response = await _dio.get(
+      final response = await DioService.dio.get(
         '$_baseUrl/rest/users',
         queryParameters: {'userName': username},
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
       );
 
       if (response.statusCode == 200) {

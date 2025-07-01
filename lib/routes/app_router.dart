@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sistema_manutencao/views/inventory_view.dart';
 import '../views/login_view.dart';
 import '../views/home_view.dart';
 import '../views/mecanicos_view.dart';
@@ -29,6 +30,13 @@ class AppRouter {
             name: 'mecanicos',
             builder: (context, state) => const TimeoutWrapper(
               child: MecanicosView(),
+            ),
+          ),
+          GoRoute(
+            path: '/inventario-maquinas',
+            name: 'inventario-maquinas',
+            builder: (context, state) => const TimeoutWrapper(
+              child: InventoryView(),
             ),
           ),
         ],
